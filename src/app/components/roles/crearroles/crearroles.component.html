@@ -1,1 +1,50 @@
-<p>crearroles works!</p>
+<div class="roles-page">
+  <div class="login-container">
+    <!-- Panel izquierdo -->
+    <div class="left-panel">
+      <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo medium" />
+      <img src="assets/upc-logo.png" alt="UPC" class="logo medium" />
+    </div>
+
+    <!-- Panel derecho (tarjeta con el formulario) -->
+    <div class="right-panel">
+      <div class="login-card roles-card">
+        <div class="card-top">
+          <div class="card-left">
+            <button type="button" class="btn-back" (click)="onBack()" aria-label="Volver">← Volver</button>
+            <h2>Nuevo rol</h2>
+          </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+          <div class="form-group">
+            <label for="nombre">Nombre <span class="req">*</span></label>
+            <input id="nombre" type="text" formControlName="nombre" placeholder="Ej. ADMIN, USER" />
+            <div class="msg" *ngIf="f.nombre.touched && f.nombre.invalid">
+              <span *ngIf="f.nombre.errors?.['required']">El nombre es obligatorio.</span>
+              <span *ngIf="f.nombre.errors?.['maxlength']">Máximo 50 caracteres.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" rows="3" formControlName="descripcion"
+                      placeholder="Descripción breve del rol"></textarea>
+            <div class="msg" *ngIf="f.descripcion.touched && f.descripcion.errors?.['maxlength']">
+              Máximo 200 caracteres.
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-save" [disabled]="form.invalid || isSaving">
+              {{ isSaving ? 'Guardando...' : 'Guardar' }}
+            </button>
+            <button type="button" class="btn btn-cancel" (click)="onBack()">Cancelar</button>
+          </div>
+
+          <p *ngIf="error" class="error-msg">{{ error }}</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
