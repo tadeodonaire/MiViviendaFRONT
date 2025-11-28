@@ -12,14 +12,14 @@ import { Router } from '@angular/router';
   styleUrl: './listarroles.component.css'
 })
 export class ListarrolesComponent {
-    roles: Roles[] = [];
+  roles: Roles[] = [];
   isLoading = false;
   error: string | null = null;
 
   constructor(
     private rolesService: RolesService,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit(): void { this.fetchRoles(); }
 
@@ -31,10 +31,11 @@ export class ListarrolesComponent {
     });
   }
 
-  // Placeholder para cuando implementes el crear
-  onAgregar(): void {}
-  
+  onAgregar(): void {
+    this.router.navigate(['/roles/nuevo']);
+  }
+
   onBack(): void {
-      this.router.navigate(['ajustes']);
+    this.router.navigate(['ajustes']);
   }
 }
