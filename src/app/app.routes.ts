@@ -44,6 +44,12 @@ export const routes: Routes = [
         data: { roles: ['Consultor'] },
     },
     {
+       path: 'usuarios',
+       component: ListarusuariosComponent,
+       canActivate: [seguridadGuard],
+        data: { roles: ['Consultor'] },
+    },
+    {
         path: 'entidadfinanciera',
         component: EntidadesFinancierasComponent,
         canActivate: [seguridadGuard],

@@ -5,13 +5,17 @@ import { Router, RouterOutlet } from '@angular/router';
   selector: 'app-ajustes',
   imports: [RouterOutlet],
   templateUrl: './ajustes.component.html',
-  styleUrl: './ajustes.component.css'
+  styleUrl: './ajustes.component.css',
 })
 export class AjustesComponent {
-  constructor(private router: Router) { }
+  constructor(private router: Router) {}
 
   verRoles() {
     this.router.navigate(['roles']);
+  }
+
+  verUsuarios() {
+    this.router.navigate(['usuarios']);
   }
 
   Regresar() {
