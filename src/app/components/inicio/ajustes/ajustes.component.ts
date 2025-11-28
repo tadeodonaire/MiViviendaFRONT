@@ -25,4 +25,8 @@ export class AjustesComponent {
   Regresar() {
     this.router.navigate(['inicio']);
   }
+
+  verEntidadesFinancieras() {
+    this.router.navigate(['entidadfinanciera']);
+  }
 }
