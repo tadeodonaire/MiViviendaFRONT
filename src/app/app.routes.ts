@@ -6,6 +6,8 @@ import { AjustesComponent } from './components/inicio/ajustes/ajustes.component'
 import { RolesComponent } from './components/roles/roles.component';
 import { CrearrolesComponent } from './components/roles/crearroles/crearroles.component';
 import { ListarusuariosComponent } from './components/usuarios/listarusuarios/listarusuarios.component';
+import { UsuariosComponent } from './components/usuarios/usuarios.component';
+import { CrearusuariosComponent } from './components/usuarios/crearusuarios/crearusuarios.component';
 
 export const routes: Routes = [
   {
@@ -36,14 +38,20 @@ export const routes: Routes = [
     data: { roles: ['Consultor'] },
   },
   {
-     path: 'roles/nuevo',
-     component: CrearrolesComponent,
-     canActivate: [seguridadGuard],
-     data: { roles: ['Consultor'] },
+    path: 'roles/nuevo',
+    component: CrearrolesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
   },
   {
     path: 'usuarios',
-    component: ListarusuariosComponent,
+    component: UsuariosComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  {
+    path: 'usuarios/nuevo',
+    component: CrearusuariosComponent,
     canActivate: [seguridadGuard],
     data: { roles: ['Consultor'] },
   },

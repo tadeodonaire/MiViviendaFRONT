@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute, RouterOutlet } from "../../../../node_modules/@angular/router/router_module.d-Bx9ArA6K";
 import { ListarusuariosComponent } from "./listarusuarios/listarusuarios.component";
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-usuarios',

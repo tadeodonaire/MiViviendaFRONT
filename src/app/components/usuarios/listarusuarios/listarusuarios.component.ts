@@ -36,7 +36,9 @@ export class ListarusuariosComponent {
   }
 
   // Placeholder para cuando implementes el crear
-  onAgregar(): void {}
+  onAgregar(): void {
+    this.router.navigate(['/usuarios/nuevo']);
+  }
 
   onBack(): void {
     this.router.navigate(['ajustes']);
