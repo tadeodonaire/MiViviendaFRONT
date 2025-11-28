@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Usuarios } from '../../../models/usuarios';
 import { Roles } from '../../../models/roles';
 import { UsuariosService } from '../../../services/usuarios.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { RolesService } from '../../../services/roles.service';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-crearusuarios',
-  imports: [CommonModule,MatFormFieldModule,ReactiveFormsModule,MatButtonModule],
+  imports: [CommonModule,MatFormFieldModule,ReactiveFormsModule,MatButtonModule,RouterModule],
   templateUrl: './crearusuarios.component.html',
   styleUrl: './crearusuarios.component.css'
 })

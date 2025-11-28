@@ -15,7 +15,7 @@
             <h2>Usuarios</h2>
           </div>
 
-        <button class="btn btn-add" [disabled]="true" title="Disponible próximamente" (click)="onAgregar()">
+        <button class="btn btn-add" title="Disponible próximamente" (click)="onAgregar()">
           Agregar usuario
         </button>
       </div>
@@ -28,7 +28,9 @@
           <tr>
             <th style="width: 100px;">ID</th>
             <th style="width: 220px;">Nombre</th>
-            <th>Descripción</th>
+            <th style="width: 220px;">Estado</th>
+            <th style="width: 220px;">Fec. Creación</th>
+            <th style="width: 220px;">Rol</th>
           </tr>
         </thead>
         <tbody>
@@ -37,7 +39,7 @@
             <td>{{ u.username }}</td>
             <td>{{ u.activo }}</td>
             <td>{{ u.creado_en }}</td>
-            <td>{{ u.roles_rol_id }}</td>
+            <td>{{ u.roles_rol_id.nombre }}</td>
           </tr>
         </tbody>
       </table>

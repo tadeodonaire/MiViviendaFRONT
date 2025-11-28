@@ -29,7 +29,7 @@ export const seguridadGuard: CanActivateFn = (
   }
 
   // ❌ Tiene token, pero no es ADMINISTRADOR y va a /usuarios/...
-  if (rolUsuario !== 'ADMINISTRADOR' && rutaActual.startsWith('/usuarios')) {
+  if (rolUsuario !== 'Consultor' && rutaActual.startsWith('/usuarios')) {
     snackBar.open('🚫 Acceso denegado.', 'Cerrar', {
       duration: 3000,
       panelClass: ['snackbar-error']
