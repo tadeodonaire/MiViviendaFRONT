@@ -1,0 +1,59 @@
+<div class="roles-page">
+  <div class="login-container">
+    <!-- Panel izquierdo (mismo estilo que login) -->
+    <div class="left-panel">
+      <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo medium" />
+      <img src="assets/upc-logo.png" alt="UPC" class="logo medium" />
+    </div>
+
+    <!-- Panel derecho (tarjeta con la tabla) -->
+    <div class="right-panel">
+      <div class="login-card roles-card">
+        <div class="card-top">
+          <div class="card-left">
+            <button type="button" class="btn-back" (click)="onBack()" aria-label="Volver">← Volver</button>
+            <h2>Clientes</h2>
+          </div>
+
+        <button class="btn btn-add" title="Disponible próximamente" (click)="onAgregar()">
+          Agregar Cliente
+        </button>
+      </div>
+
+      <div *ngIf="isLoading" class="loading">Cargando...</div>
+      <p *ngIf="error" class="error-msg">{{ error }}</p>
+
+      <table *ngIf="!isLoading && clientes.length" class="roles-table">
+        <thead>
+          <tr>
+            <th style="width: 100px;">ID</th>
+            <th style="width: 220px;">Nombre</th>
+            <th style="width: 220px;">Apellido</th>
+            <th style="width: 220px;">Correo</th>
+            <th style="width: 220px;">DNI</th>
+            <th style="width: 220px;">Ingresos Mensuales</th>
+            <th style="width: 220px;">Moneda</th>
+            <th style="width: 220px;">Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of clientes">
+            <td>{{ c.cliente_id }}</td>
+            <td>{{ c.nombre }}</td>
+            <td>{{ c.apellido }}</td>
+            <td>{{ c.correo }}</td>
+            <td>{{ c.dni }}</td>
+            <td>{{ c.ingresosMensuales }}</td>
+            <td>{{ c.moneda }}</td>
+            <td>{{ c.usuarios_usuario_id.username }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!isLoading && !clientes.length && !error" class="empty-state">
+        No hay clientes aún.
+      </p>
+     </div>
+    </div>
+  </div>
+</div>

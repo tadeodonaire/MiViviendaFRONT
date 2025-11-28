@@ -1,0 +1,131 @@
+<div class="roles-page">
+  <div class="login-container">
+    <!-- Panel izquierdo -->
+    <div class="left-panel">
+      <img
+        src="assets/mivivienda-logo.png"
+        alt="MiVivienda"
+        class="logo medium"
+      />
+      <img src="assets/upc-logo.png" alt="UPC" class="logo medium" />
+    </div>
+
+    <!-- Panel derecho -->
+    <div class="right-panel">
+      <div class="login-card">
+        <!-- Cabecera -->
+        <div class="card-top">
+          <div class="card-left">
+            <button class="btn-back" routerLink="/clientes">Volver</button>
+            <h2>Crear Cliente</h2>
+          </div>
+        </div>
+
+        <!-- Formulario -->
+        <form [formGroup]="form" (ngSubmit)="aceptar()">
+          <div class="form-group">
+            <label for="nombre"
+              >Nombre del cliente <span class="req">*</span></label
+            >
+            <input id="nombre" type="text" formControlName="nombre" />
+            <div
+              *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched"
+              class="msg"
+            >
+              El nombre del cliente es obligatorio.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="apellido"
+              >Apellido del cliente <span class="req">*</span></label
+            >
+            <input id="apellido" type="text" formControlName="apellido" />
+            <div
+              *ngIf="
+                form.get('apellido')?.invalid && form.get('apellido')?.touched
+              "
+              class="msg"
+            >
+              El apellido del cliente es obligatorio.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="correo">Correo <span class="req">*</span></label>
+            <input id="correo" type="text" formControlName="correo" />
+            <div
+              *ngIf="form.get('correo')?.invalid && form.get('correo')?.touched"
+              class="msg"
+            >
+              El correo del cliente es obligatorio.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dni">DNI <span class="req">*</span></label>
+            <input id="dni" type="text" formControlName="dni" />
+            <div
+              *ngIf="form.get('dni')?.invalid && form.get('dni')?.touched"
+              class="msg"
+            >
+              El DNI del cliente es obligatorio.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ingresosMensuales"
+              >Ingresos Mensuales <span class="req">*</span></label
+            >
+            <input
+              id="ingresosMensuales"
+              type="text"
+              formControlName="ingresosMensuales"
+            />
+            <div
+              *ngIf="
+                form.get('ingresosMensuales')?.invalid &&
+                form.get('ingresosMensuales')?.touched
+              "
+              class="msg"
+            >
+              Los ingresos mensuales del cliente son obligatorios.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="usuario">Rol <span class="req">*</span></label>
+            <select id="usuario" formControlName="usuario">
+              <option value="">Seleccione un rol</option>
+              <option
+                *ngFor="let usuario of listaUsuarios"
+                [value]="usuario.usuario_id"
+              >
+                {{ usuario.username }}
+              </option>
+            </select>
+            <div
+              *ngIf="
+                form.get('usuario')?.invalid && form.get('usuario')?.touched
+              "
+              class="msg"
+            >
+              El rol es obligatorio.
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="actions">
+            <button
+              type="submit"
+              class="btn btn-save"
+              [disabled]="form.invalid"
+            >
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

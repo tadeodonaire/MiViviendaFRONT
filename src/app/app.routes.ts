@@ -5,12 +5,12 @@ import { seguridadGuard } from './guard/seguridad.guard';
 import { AjustesComponent } from './components/inicio/ajustes/ajustes.component';
 import { RolesComponent } from './components/roles/roles.component';
 import { CrearrolesComponent } from './components/roles/crearroles/crearroles.component';
-import { ListarusuariosComponent } from './components/usuarios/listarusuarios/listarusuarios.component';
 import { UsuariosComponent } from './components/usuarios/usuarios.component';
 import { CrearusuariosComponent } from './components/usuarios/crearusuarios/crearusuarios.component';
+import { ClientesComponent } from './components/clientes/clientes.component';
+import { CrearclientesComponent } from './components/clientes/crearclientes/crearclientes.component';
 import { CreareditarentidadesfinancierasComponent } from './components/entidades-financieras/creareditarentidadesfinancieras/creareditarentidadesfinancieras.component';
 import { EntidadesFinancierasComponent } from './components/entidades-financieras/entidades-financieras.component';
-
 
 export const routes: Routes = [
   {
@@ -58,6 +58,18 @@ export const routes: Routes = [
     canActivate: [seguridadGuard],
     data: { roles: ['Consultor'] },
   },
+   {
+   path: 'clientes',
+   component: ClientesComponent,
+   canActivate: [seguridadGuard],
+   data: { roles: ['Consultor'] },
+ },
+ {
+   path: 'clientes/nuevo',
+   component: CrearclientesComponent,
+   canActivate: [seguridadGuard],
+   data: { roles: ['Consultor'] },
+ },
   {
      path: 'entidadfinanciera',
      component: EntidadesFinancierasComponent,
