@@ -1,0 +1,49 @@
+<div class="roles-page">
+  <div class="login-container">
+    <!-- Panel izquierdo (mismo estilo que login) -->
+    <div class="left-panel">
+      <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo medium" />
+      <img src="assets/upc-logo.png" alt="UPC" class="logo medium" />
+    </div>
+
+    <!-- Panel derecho (tarjeta con la tabla) -->
+    <div class="right-panel">
+      <div class="login-card roles-card">
+        <div class="card-top">
+          <div class="card-left">
+            <button type="button" class="btn-back" (click)="onBack()" aria-label="Volver">← Volver</button>
+            <h2>Roles</h2>
+          </div>
+
+        <button class="btn btn-add" [disabled]="true" title="Disponible próximamente" (click)="onAgregar()">
+          Agregar rol
+        </button>
+      </div>
+
+      <div *ngIf="isLoading" class="loading">Cargando...</div>
+      <p *ngIf="error" class="error-msg">{{ error }}</p>
+
+      <table *ngIf="!isLoading && roles.length" class="roles-table">
+        <thead>
+          <tr>
+            <th style="width: 100px;">ID</th>
+            <th style="width: 220px;">Nombre</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of roles">
+            <td>{{ r.rol_id }}</td>
+            <td>{{ r.nombre }}</td>
+            <td>{{ r.descripcion }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!isLoading && !roles.length && !error" class="empty-state">
+        No hay roles aún.
+      </p>
+     </div>
+    </div>
+  </div>
+</div>
