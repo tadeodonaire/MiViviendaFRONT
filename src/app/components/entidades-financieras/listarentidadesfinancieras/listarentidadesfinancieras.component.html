@@ -1,1 +1,60 @@
-<p>listarentidadesfinancieras works!</p>
+<div class="roles-page">
+    <div class="login-container">
+        <!-- Panel izquierdo -->
+        <div class="left-panel">
+            <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo medium" />
+            <img src="assets/upc-logo.png" alt="UPC" class="logo medium" />
+        </div>
+
+        <!-- Panel derecho -->
+        <div class="right-panel">
+            <div class="login-card efi-card">
+                <div class="card-top">
+                    <div class="card-left">
+                        <button type="button" class="btn-back" (click)="onBack()">← Volver</button>
+                        <h2>Entidades financieras</h2>
+                    </div>
+                    <button type="button" class="btn btn-add" (click)="onAgregar()">Agregar entidad</button>
+                </div>
+
+                <div *ngIf="isLoading" class="loading">Cargando...</div>
+                <p *ngIf="error" class="error-msg">{{ error }}</p>
+
+                <div class="table-wrap" *ngIf="!isLoading && entidades.length">
+                    <table class="efi-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>TEA (min–max)</th>
+                                <th>Precio (min–max)</th>
+                                <th>Cuota inicial mín.</th>
+                                <th>Valor cotización máx.</th>
+                                <th>Plazo (min–max)</th>
+                                <th>Seg. desgrav.</th>
+                                <th>Seg. inmueble</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let e of entidades">
+                                <td>{{ e.entidadFinanciera_id }}</td>
+                                <td>{{ e.nombre }}</td>
+                                <td>{{ formatTea(getTeaMin(e)) }} – {{ formatTea(getTeaMax(e)) }}</td>
+                                <td>{{ formatMoney(e.precioMin) }} – {{ formatMoney(e.precioMax) }}</td>
+                                <td>{{ e.cuotaInicialMin }}%</td>
+                                <td>{{ e.valorCotizacionMax }}%</td>
+                                <td>{{ formatPlazo(e.plazoMin, e.plazoMax) }}</td>
+                                <td>{{ formatSeguro(e.seguroDesgravamen) }}</td>
+                                <td>{{ formatSeguro(e.seguroInmueble) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p *ngIf="!isLoading && !entidades.length && !error" class="empty-state">
+                    No hay entidades registradas.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
