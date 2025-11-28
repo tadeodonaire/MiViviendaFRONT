@@ -18,6 +18,10 @@ export class AjustesComponent {
     this.router.navigate(['usuarios']);
   }
 
+  verClientes() {
+  this.router.navigate(['clientes']);
+}
+
   Regresar() {
     this.router.navigate(['inicio']);
   }
