@@ -1,0 +1,30 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="logo-section">
+      <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo-header">
+      <h1>Simulador Hipotecario</h1>
+    </div>
+
+    <div class="actions-section">
+      <button class="logout-btn">Cerrar Sesión</button>
+      <img src="assets/avatar.png" alt="Perfil" class="avatar-icon">
+    </div>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="dashboard-main">
+    <img src="assets/upc-logo.png" alt="UPC" class="upc-logo">
+
+    <div class="btn-group">
+      <button class="action-btn" >Entidades financieras</button>
+      <button class="action-btn" (click)="verRoles()">Roles</button>
+      <button class="action-btn" >Reglas bonos</button>
+      <button class="action-btn" (click)="Regresar()">Regresar</button>
+
+    </div>
+
+    <router-outlet></router-outlet>
+
+  </main>
+</div>
