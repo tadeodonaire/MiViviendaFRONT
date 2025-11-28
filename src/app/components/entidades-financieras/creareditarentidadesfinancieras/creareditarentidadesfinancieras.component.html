@@ -1,1 +1,101 @@
-<p>creareditarentidadesfinancieras works!</p>
+<!-- src/app/components/entidades-financieras/crear-entidades/crear-entidades.component.html -->
+<div class="efi-page">
+  <div class="login-container">
+    <div class="left-panel">
+      <img src="assets/mivivienda-logo.png" class="logo medium" alt="MiVivienda" />
+      <img src="assets/upc-logo.png" class="logo medium" alt="UPC" />
+    </div>
+
+    <div class="right-panel">
+      <div class="login-card efi-card">
+        <div class="card-top">
+          <div class="card-left">
+            <button type="button" class="btn-back" (click)="onBack()">← Volver</button>
+            <h2>Nueva entidad financiera</h2>
+          </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+          <div class="grid">
+            <div class="form-group">
+              <label for="nombre">Nombre <span class="req">*</span></label>
+              <input id="nombre" type="text" formControlName="nombre" placeholder="Ej. Banco X" />
+              <div class="msg" *ngIf="f.nombre.touched && f.nombre.invalid">
+                <span *ngIf="f.nombre.errors?.['required']">Obligatorio.</span>
+                <span *ngIf="f.nombre.errors?.['maxlength']">Máx. 80 caracteres.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="cuotaInicialMin">Cuota inicial mín. (%)</label>
+              <input id="cuotaInicialMin" type="number" formControlName="cuotaInicialMin" />
+            </div>
+
+            <div class="form-group">
+              <label for="valorCotizacionMax">Valor cotización máx. (%)</label>
+              <input id="valorCotizacionMax" type="number" formControlName="valorCotizacionMax" />
+            </div>
+
+            <div class="form-group">
+              <label>TEA min (%)</label>
+              <input type="number" formControlName="TEAmin" />
+            </div>
+
+            <div class="form-group">
+              <label>TEA max (%)</label>
+              <input type="number" formControlName="TEAmax" />
+              <div class="msg" *ngIf="form.errors?.['teaRange'] && (f.TEAmin.touched || f.TEAmax.touched)">
+                TEA máx. debe ser ≥ TEA mín.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Precio mín. (S/)</label>
+              <input type="number" formControlName="precioMin" />
+            </div>
+
+            <div class="form-group">
+              <label>Precio máx. (S/)</label>
+              <input type="number" formControlName="precioMax" />
+              <div class="msg" *ngIf="form.errors?.['priceRange'] && (f.precioMin.touched || f.precioMax.touched)">
+                Precio máx. debe ser ≥ mín.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Plazo mín. (años)</label>
+              <input type="number" formControlName="plazoMin" />
+            </div>
+
+            <div class="form-group">
+              <label>Plazo máx. (años)</label>
+              <input type="number" formControlName="plazoMax" />
+              <div class="msg" *ngIf="form.errors?.['plazoRange'] && (f.plazoMin.touched || f.plazoMax.touched)">
+                Plazo máx. debe ser ≥ mín.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Seguro desgravamen (%)</label>
+              <input type="number" formControlName="seguroDesgravamen" step="0.001"/>
+            </div>
+
+            <div class="form-group">
+              <label>Seguro inmueble (%)</label>
+              <input type="number" formControlName="seguroInmueble" step="0.001"/>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-save" type="submit" [disabled]="form.invalid || isSaving">
+              {{ isSaving ? 'Guardando…' : 'Guardar' }}
+            </button>
+            <button class="btn btn-cancel" type="button" (click)="onBack()">Cancelar</button>
+          </div>
+
+          <p *ngIf="error" class="error-msg">{{ error }}</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
