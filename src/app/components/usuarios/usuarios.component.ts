@@ -10,6 +10,4 @@ import { ActivatedRoute, RouterOutlet } from '@angular/router';
 })
 export class UsuariosComponent {
   constructor(public route: ActivatedRoute) {}
-
-  
 }

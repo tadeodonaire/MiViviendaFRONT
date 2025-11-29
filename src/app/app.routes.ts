@@ -14,6 +14,8 @@ import { EntidadesFinancierasComponent } from './components/entidades-financiera
 import { B } from '@angular/cdk/keycodes';
 import { BonosReglasComponent } from './components/bonos-reglas/bonos-reglas.component';
 import { CreareditarbonosreglasComponent } from './components/bonos-reglas/creareditarbonosreglas/creareditarbonosreglas.component';
+import { PropiedadesComponent } from './components/propiedades/propiedades.component';
+import { CrearpropiedadesComponent } from './components/propiedades/crearpropiedades/crearpropiedades.component';
 
 export const routes: Routes = [
   {
@@ -61,40 +63,52 @@ export const routes: Routes = [
     canActivate: [seguridadGuard],
     data: { roles: ['Consultor'] },
   },
-   {
-   path: 'clientes',
-   component: ClientesComponent,
-   canActivate: [seguridadGuard],
-   data: { roles: ['Consultor'] },
- },
- {
-   path: 'clientes/nuevo',
-   component: CrearclientesComponent,
-   canActivate: [seguridadGuard],
-   data: { roles: ['Consultor'] },
- },
   {
-     path: 'entidadfinanciera',
-     component: EntidadesFinancierasComponent,
-     canActivate: [seguridadGuard],
-     data: { roles: ['Consultor'] },
+    path: 'clientes',
+    component: ClientesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
   },
   {
-      path: 'entidadfinanciera/nuevo',
-      component: CreareditarentidadesfinancierasComponent,
-      canActivate: [seguridadGuard],
-      data: { roles: ['Consultor'] },
+    path: 'clientes/nuevo',
+    component: CrearclientesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
   },
   {
-     path: 'bonosreglas',
-     component: BonosReglasComponent,
-     canActivate: [seguridadGuard],
-     data: { roles: ['Consultor'] },
+    path: 'entidadfinanciera',
+    component: EntidadesFinancierasComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
   },
   {
-      path: 'bonosreglas/nuevo',
-      component: CreareditarbonosreglasComponent,
-      canActivate: [seguridadGuard],
-      data: { roles: ['Consultor'] },
+    path: 'entidadfinanciera/nuevo',
+    component: CreareditarentidadesfinancierasComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  {
+    path: 'bonosreglas',
+    component: BonosReglasComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  {
+    path: 'bonosreglas/nuevo',
+    component: CreareditarbonosreglasComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  {
+    path: 'propiedades',
+    component: PropiedadesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  {
+    path: 'propiedades/nuevo',
+    component: CrearpropiedadesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
   },
 ];

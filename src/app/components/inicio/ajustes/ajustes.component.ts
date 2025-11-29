@@ -19,8 +19,12 @@ export class AjustesComponent {
   }
 
   verClientes() {
-  this.router.navigate(['clientes']);
-}
+    this.router.navigate(['clientes']);
+  }
+
+  verPropiedades() {
+    this.router.navigate(['propiedades']);
+  }
 
   Regresar() {
     this.router.navigate(['inicio']);

@@ -1,6 +1,6 @@
 import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
+import { provideServerRendering } from '@angular/platform-server';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
@@ -20,6 +20,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideServerRendering(),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch(), withInterceptorsFromDi()),
     importProvidersFrom(
@@ -30,6 +31,6 @@ export const appConfig: ApplicationConfig = {
           disallowedRoutes: ['http://localhost:8089/login'],
         },
       })
-    ),
+    ), provideClientHydration(withEventReplay()),
   ],
 };

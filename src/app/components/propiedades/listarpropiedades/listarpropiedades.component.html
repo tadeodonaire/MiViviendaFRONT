@@ -1,0 +1,54 @@
+<div class="roles-page">
+  <div class="login-container">
+    <!-- Panel izquierdo (mismo estilo que login) -->
+    <div class="left-panel">
+      <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo medium" />
+      <img src="assets/upc-logo.png" alt="UPC" class="logo medium" />
+    </div>
+
+    <!-- Panel derecho (tarjeta con la tabla) -->
+    <div class="right-panel">
+      <div class="login-card roles-card">
+        <div class="card-top">
+          <div class="card-left">
+            <button type="button" class="btn-back" (click)="onBack()" aria-label="Volver">← Volver</button>
+            <h2>Propiedades</h2>
+          </div>
+
+        <button class="btn btn-add" title="Disponible próximamente" (click)="onAgregar()">
+          Agregar propiedad
+        </button>
+      </div>
+
+      <div *ngIf="isLoading" class="loading">Cargando...</div>
+      <p *ngIf="error" class="error-msg">{{ error }}</p>
+
+      <table *ngIf="!isLoading && propiedades.length" class="roles-table">
+        <thead>
+          <tr>
+            <th style="width: 100px;">ID</th>
+            <th style="width: 220px;">Nombre de inmueble</th>
+            <th style="width: 200px;">Área de inmueble</th>
+            <th style="width: 220px;">Precio inmueble</th>
+            <th style="width: 220px;">Cliente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of propiedades">
+            <td>{{ p.inmueble_id }}</td>
+            <td>{{ p.nombreInmueble }}</td>
+            <td>{{ p.areaInmueble }}</td>
+            <td>{{ p.direccionInmueble }}</td>
+            <td>{{ p.precioInmueble }}</td>
+            <td>{{ p.clientes_cliente_id.nombre }} {{ p.clientes_cliente_id.apellido }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!isLoading && !propiedades.length && !error" class="empty-state">
+        No hay propiedades aún.
+      </p>
+     </div>
+    </div>
+  </div>
+</div>
