@@ -11,6 +11,9 @@ import { ClientesComponent } from './components/clientes/clientes.component';
 import { CrearclientesComponent } from './components/clientes/crearclientes/crearclientes.component';
 import { CreareditarentidadesfinancierasComponent } from './components/entidades-financieras/creareditarentidadesfinancieras/creareditarentidadesfinancieras.component';
 import { EntidadesFinancierasComponent } from './components/entidades-financieras/entidades-financieras.component';
+import { B } from '@angular/cdk/keycodes';
+import { BonosReglasComponent } from './components/bonos-reglas/bonos-reglas.component';
+import { CreareditarbonosreglasComponent } from './components/bonos-reglas/creareditarbonosreglas/creareditarbonosreglas.component';
 
 export const routes: Routes = [
   {
@@ -79,6 +82,18 @@ export const routes: Routes = [
   {
       path: 'entidadfinanciera/nuevo',
       component: CreareditarentidadesfinancierasComponent,
+      canActivate: [seguridadGuard],
+      data: { roles: ['Consultor'] },
+  },
+  {
+     path: 'bonosreglas',
+     component: BonosReglasComponent,
+     canActivate: [seguridadGuard],
+     data: { roles: ['Consultor'] },
+  },
+  {
+      path: 'bonosreglas/nuevo',
+      component: CreareditarbonosreglasComponent,
       canActivate: [seguridadGuard],
       data: { roles: ['Consultor'] },
   },

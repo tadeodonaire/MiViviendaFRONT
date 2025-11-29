@@ -1,0 +1,85 @@
+<div class="br-page">
+  <div class="login-container">
+    <!-- Panel izquierdo -->
+    <div class="left-panel">
+      <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo medium" />
+      <img src="assets/upc-logo.png" alt="UPC" class="logo medium" />
+    </div>
+
+    <!-- Panel derecho -->
+    <div class="right-panel">
+      <div class="login-card br-card">
+        <div class="card-top">
+          <div class="card-left">
+            <button type="button" class="btn-back" (click)="onBack()">← Volver</button>
+            <h2>Nueva regla de bono</h2>
+          </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+          <div class="grid">
+            <div class="form-group">
+              <label>Nombre <span class="req">*</span></label>
+              <select formControlName="nombre">
+                <option value="BBP">BBP</option>
+                <option value="BBI">BBI</option>
+              </select>
+              <div class="msg" *ngIf="f.nombre.touched && f.nombre.invalid">
+                <span *ngIf="f.nombre.errors?.['required']">Obligatorio.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Moneda <span class="req">*</span></label>
+              <select formControlName="moneda">
+                <option value="PEN">PEN</option>
+                <option value="USD">USD</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Precio mín. (S/)</label>
+              <input type="number" formControlName="precioMin" step="0.01" />
+              <div class="msg" *ngIf="f.precioMin.touched && f.precioMin.invalid">
+                <span *ngIf="f.precioMin.errors?.['required']">Obligatorio.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Precio máx. (S/)</label>
+              <input type="number" formControlName="precioMax" step="0.01" placeholder="Vacío = sin tope" />
+              <div class="msg" *ngIf="form.errors?.['priceRange'] && (f.precioMin.touched || f.precioMax.touched)">
+                Precio máx. debe ser ≥ mín. (o dejar vacío).
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Ingreso máx. (S/)</label>
+              <input type="number" formControlName="ingresoMax" step="0.01" />
+              <div class="msg" *ngIf="f.ingresoMax.touched && f.ingresoMax.invalid">
+                <span *ngIf="f.ingresoMax.errors?.['required']">Obligatorio.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Monto del bono (S/)</label>
+              <input type="number" formControlName="monto" step="0.01" />
+              <div class="msg" *ngIf="f.monto.touched && f.monto.invalid">
+                <span *ngIf="f.monto.errors?.['required']">Obligatorio.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-save" type="submit" [disabled]="form.invalid || isSaving">
+              {{ isSaving ? 'Guardando…' : 'Guardar' }}
+            </button>
+            <button class="btn btn-cancel" type="button" (click)="onBack()">Cancelar</button>
+          </div>
+
+          <p *ngIf="error" class="error-msg">{{ error }}</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
