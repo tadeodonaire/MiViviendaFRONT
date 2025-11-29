@@ -1,0 +1,54 @@
+<div class="br-page">
+  <div class="login-container">
+    <!-- Panel izquierdo -->
+    <div class="left-panel">
+      <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo medium" />
+      <img src="assets/upc-logo.png" alt="UPC" class="logo medium" />
+    </div>
+
+    <!-- Panel derecho -->
+    <div class="right-panel">
+      <div class="login-card br-card">
+        <div class="card-top">
+          <div class="card-left">
+            <button type="button" class="btn-back" (click)="onBack()">← Volver</button>
+            <h2>Bonos Reglas</h2>
+          </div>
+
+          <!-- Botón agregar (puedes quitar si aún no crearás) -->
+          <button type="button" class="btn btn-add" (click)="onAgregar()">Agregar</button>
+        </div>
+
+        <div *ngIf="isLoading" class="loading">Cargando…</div>
+        <p *ngIf="error" class="error-msg">{{ error }}</p>
+
+        <table *ngIf="!isLoading && reglas.length" class="br-table">
+          <thead>
+            <tr>
+              <th style="width:72px;">ID</th>
+              <th style="width:160px;">Nombre</th>
+              <th style="width:100px;">Moneda</th>
+              <th>Precio (min–max)</th>
+              <th style="width:160px;">Ingreso máx.</th>
+              <th style="width:140px;">Monto bono</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of reglas">
+              <td>{{ r.bonoRegla_id }}</td>
+              <td>{{ r.nombre }}</td>
+              <td>{{ r.moneda }}</td>
+              <td>{{ formatRange(r.precioMin, r.precioMax) }}</td>
+              <td class="num">{{ formatIngresoMax(r.ingresoMax) }}</td>
+              <td class="num">{{ formatMoney(r.monto) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p *ngIf="!isLoading && !reglas.length && !error" class="empty-state">
+          No hay reglas registradas.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

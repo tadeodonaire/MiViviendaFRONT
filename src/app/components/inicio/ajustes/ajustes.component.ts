@@ -29,4 +29,8 @@ export class AjustesComponent {
   verEntidadesFinancieras() {
     this.router.navigate(['entidadfinanciera']);
   }
+
+  verBonosReglas() {
+    this.router.navigate(['bonosreglas']);
+  }
 }
