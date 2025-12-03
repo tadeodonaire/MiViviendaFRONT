@@ -77,8 +77,7 @@ export class SimulacionesAnterioresComponent implements OnInit {
   }
 
   verSimulacion(sim: SimJson) {
-    // Redirige a la página de detalle o simulador
-    this.router.navigate(['/versimulaciones', sim.simulacion_id]);
+    this.router.navigate(['/simulaciones', Number(sim.simulacion_id)]);
   }
 
   volverMenu() {

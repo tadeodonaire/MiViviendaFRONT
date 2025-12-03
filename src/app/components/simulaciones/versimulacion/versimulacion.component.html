@@ -1,96 +1,99 @@
 <!-- ver-simulacion.component.html -->
 <div class="hoja">
-  <header class="hoja__hdr no-print">
-    <button class="btn" (click)="volver()">← Volver</button>
-    <div class="spacer"></div>
-    <button class="btn" (click)="exportCSV()">Descargar CSV</button>
-    <button class="btn primary" (click)="imprimir()">Imprimir</button>
-  </header>
+    <header class="hoja__hdr no-print">
+        <button class="btn" (click)="volver()">← Volver</button>
+        <div class="spacer"></div>
+        <button class="btn" (click)="exportCSV()">Descargar CSV</button>
+        <button class="btn primary" (click)="imprimir()">Imprimir</button>
+    </header>
 
-  <ng-container *ngIf="loading()">Cargando…</ng-container>
-  <ng-container *ngIf="!loading() && error()">{{ error() }}</ng-container>
+    <ng-container *ngIf="loading()">Cargando…</ng-container>
+    <ng-container *ngIf="!loading() && error()">{{ error() }}</ng-container>
 
-  <ng-container *ngIf="!loading() && !error() && data() as d">
-    <div class="hoja__title">
-      <img src="assets/mivivienda-logo.png" alt="MiVivienda">
-      <div>
-        <h1>Hoja de simulación</h1>
-        <p>ID: {{ d.simulacion.simulacion_id }}</p>
-      </div>
-    </div>
+    <ng-container *ngIf="!loading() && !error() && data() as d">
+        <div class="hoja__title">
+            <img src="assets/mivivienda-logo.png" alt="MiVivienda">
+            <div>
+                <h1>Hoja de simulación</h1>
+                <p>ID: {{ d.simulacion.simulacion_id }}</p>
+            </div>
+        </div>
 
-    <section class="cards">
-      <div class="card">
-        <div class="label">Monto a financiar</div>
-        <div class="value">S/ {{ d.simulacion.montoPrestamo | number:'1.2-2' }}</div>
-      </div>
-      <div class="card">
-        <div class="label">Cuota (francesa, sin seguros)</div>
-        <div class="value">S/ {{ d.simulacion.cuotaFija | number:'1.2-2' }}</div>
-      </div>
-      <div class="card">
-        <div class="label">TEA</div>
-        <div class="value">{{ (d.simulacion.valorTasa * 100) | number:'1.2-2' }}%</div>
-      </div>
-    </section>
+        <section class="cards">
+            <div class="card">
+                <div class="label">Monto a financiar</div>
+                <div class="value">S/ {{ d.simulacion.montoPrestamo | number:'1.2-2' }}</div>
+            </div>
+            <div class="card">
+                <div class="label">Cuota (francesa, sin seguros)</div>
+                <div class="value">S/ {{ d.simulacion.cuotaFija | number:'1.2-2' }}</div>
+            </div>
+            <div class="card">
+                <div class="label">TEA</div>
+                <div class="value">{{ (d.simulacion.valorTasa * 100) | number:'1.2-2' }}%</div>
+            </div>
+        </section>
 
-    <section class="grid">
-      <div><b>Propiedad:</b> {{ d.simulacion.propiedades_inmueble_id.nombreInmueble }}</div>
-      <div><b>Entidad:</b> {{ d.simulacion.entidades_financieras_entidadFinanciera_id.nombre }}</div>
-      <div><b>Precio prop.:</b> S/ {{ d.simulacion.precioVenta | number:'1.2-2' }}</div>
-      <div><b>Cuota inicial:</b> S/ {{ d.simulacion.cuotaInicial | number:'1.2-2' }}</div>
-      <div><b>Plazo:</b> {{ d.simulacion.tiempoAnios }} años</div>
-      <div><b>Frecuencia:</b> {{ d.simulacion.frecuenciaPago }} × año</div>
-      <div><b>Tipo de año:</b> {{ d.simulacion.tipoAnio }}</div>
-      <div><b>Gracia:</b> {{ d.simulacion.tipoGracia }} ({{ d.simulacion.cantidadGracia || 0 }})</div>
-      <div><b>Seguro desgrav. (% mes):</b> {{ d.simulacion.seguroDesgravamen | number:'1.3-3' }}%</div>
-      <div><b>Seguro inmueble (% año):</b> {{ d.simulacion.seguroInmueble | number:'1.3-3' }}%</div>
-      <div><b>Bono:</b> {{ d.simulacion.bonoAplica ? (d.simulacion.bonoTipo + ' S/ ' + (d.simulacion.bonoMonto | number:'1.2-2')) : 'No aplica' }}</div>
-    </section>
+        <section class="grid">
+            <div><b>Propiedad:</b> {{ d.simulacion.propiedades_inmueble_id.nombreInmueble }}</div>
+            <div><b>Entidad:</b> {{ d.simulacion.entidades_financieras_entidadFinanciera_id.nombre }}</div>
+            <div><b>Precio prop.:</b> S/ {{ d.simulacion.precioVenta | number:'1.2-2' }}</div>
+            <div><b>Cuota inicial:</b> S/ {{ d.simulacion.cuotaInicial | number:'1.2-2' }}</div>
+            <div><b>Plazo:</b> {{ d.simulacion.tiempoAnios }} años</div>
+            <div><b>Frecuencia:</b> {{ d.simulacion.frecuenciaPago }} × año</div>
+            <div><b>Tipo de año:</b> {{ d.simulacion.tipoAnio }}</div>
+            <div><b>Gracia:</b> {{ d.simulacion.tipoGracia }} ({{ d.simulacion.cantidadGracia || 0 }})</div>
+            <div><b>Seguro desgrav. (% mes):</b> {{ d.simulacion.seguroDesgravamen | number:'1.3-3' }}%</div>
+            <div><b>Seguro inmueble (% año):</b> {{ d.simulacion.seguroInmueble | number:'1.3-3' }}%</div>
+            <div><b>Bono:</b> {{ d.simulacion.bonoAplica ? (d.simulacion.bonoTipo + ' S/ ' + (d.simulacion.bonoMonto |
+                number:'1.2-2')) : 'No aplica' }}</div>
+        </section>
 
-    <h3>Cronograma</h3>
-    <div class="tabla-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Per</th>
-            <th>Saldo inicial</th>
-            <th>Interés</th>
-            <th>Amortización</th>
-            <th>Cuota</th>
-            <th>Seg. desgrav.</th>
-            <th>Seg. inmueble</th>
-            <th>Cuota total</th>
-            <th>Saldo final</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let r of d.cronograma">
-            <td>{{ r.periodo }}</td>
-            <td>{{ r.saldoInicial      | number:'1.2-2' }}</td>
-            <td>{{ r.interes           | number:'1.2-2' }}</td>
-            <td>{{ r.amortizacion      | number:'1.2-2' }}</td>
-            <td>{{ r.cuota             | number:'1.2-2' }}</td>
-            <td>{{ r.seguroDesgravamen | number:'1.2-2' }}</td>
-            <td>{{ r.seguroInmueble    | number:'1.2-2' }}</td>
-            <td>{{ r.cuotaTotal        | number:'1.2-2' }}</td>
-            <td>{{ r.saldoFinal        | number:'1.2-2' }}</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <th>Totales</th>
-            <th></th>
-            <th>{{ tInteres()   | number:'1.2-2' }}</th>
-            <th>{{ tAmort()     | number:'1.2-2' }}</th>
-            <th>{{ tCuotaBase() | number:'1.2-2' }}</th>
-            <th>{{ tSegDesg()   | number:'1.2-2' }}</th>
-            <th>{{ tSegInm()    | number:'1.2-2' }}</th>
-            <th>{{ tCuotaTot()  | number:'1.2-2' }}</th>
-            <th></th>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  </ng-container>
+        <h3>Cronograma</h3>
+        <div class="tabla-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Per</th>
+                        <th>Saldo inicial</th>
+                        <th>Interés</th>
+                        <th>Amortización</th>
+                        <th>Cuota</th>
+                        <th>Seg. desgrav.</th>
+                        <th>Seg. inmueble</th>
+                        <th>Cuota total</th>
+                        <th>Saldo final</th>
+                        <th>Flujo</th> <!-- ✅ NUEVO -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let r of d.cronograma; trackBy: trackByPeriodo">
+                        <td>{{ r.periodo }}</td>
+                        <td>{{ r.saldoInicial | number:'1.2-2' }}</td>
+                        <td>{{ r.interes | number:'1.2-2' }}</td>
+                        <td>{{ r.amortizacion | number:'1.2-2' }}</td>
+                        <td>{{ r.cuota | number:'1.2-2' }}</td>
+                        <td>{{ r.seguroDesgravamen | number:'1.2-2' }}</td>
+                        <td>{{ r.seguroInmueble | number:'1.2-2' }}</td>
+                        <td>{{ r.cuotaTotal | number:'1.2-2' }}</td>
+                        <td>{{ r.saldoFinal | number:'1.2-2' }}</td>
+                        <td>{{ r.flujo | number:'1.2-2' }}</td> <!-- ✅ NUEVO -->
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Totales</th>
+                        <th></th>
+                        <th>{{ tInteres() | number:'1.2-2' }}</th>
+                        <th>{{ tAmort() | number:'1.2-2' }}</th>
+                        <th>{{ tCuotaBase() | number:'1.2-2' }}</th>
+                        <th>{{ tSegDesg() | number:'1.2-2' }}</th>
+                        <th>{{ tSegInm() | number:'1.2-2' }}</th>
+                        <th>{{ tCuotaTot() | number:'1.2-2' }}</th>
+                        <th>{{ tFlujo() | number:'1.2-2' }}</th> <!-- ✅ NUEVO -->
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </ng-container>
 </div>

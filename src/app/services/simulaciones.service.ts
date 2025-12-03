@@ -21,8 +21,11 @@ export class SimulacionesService {
   }
 
   // simulaciones.service.ts
-  getHoja(id: number) {
-    return this.http.get<SimulacionConCronogramaResponse>(`${this.url}/simulaciones/${id}/hoja`);
+  // Traer (recalcular en BE) una hoja por ID para “Simulaciones anteriores”
+  getHoja(id: number): Observable<SimulacionConCronogramaResponse> {
+    // OJO: sin repetir 'simulaciones'
+    return this.http.get<SimulacionConCronogramaResponse>(`${this.url}/${id}/hoja`);
   }
+  
 
 }
