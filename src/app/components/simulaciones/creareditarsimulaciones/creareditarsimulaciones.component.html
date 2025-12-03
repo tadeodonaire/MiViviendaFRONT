@@ -1,0 +1,150 @@
+<div class="simu-page">
+  <div class="login-container">
+    <div class="left-panel">
+      <img src="assets/mivivienda-logo.png" class="logo medium" alt="MiVivienda" />
+      <img src="assets/upc-logo.png" class="logo medium" alt="UPC" />
+    </div>
+
+    <div class="right-panel">
+      <div class="login-card simu-card">
+        <div class="card-top">
+          <div class="card-left">
+            <button type="button" class="btn-back" (click)="cancel()">← Volver</button>
+            <h2>Nueva simulación</h2>
+          </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <div class="grid">
+            <!-- Cliente / Propiedad / Entidad -->
+            <div class="form-group">
+              <label>Cliente <span class="req">*</span></label>
+              <select formControlName="clienteId">
+                <option [ngValue]="null">— Seleccione —</option>
+                <option *ngFor="let c of clientes" [ngValue]="c.cliente_id">
+                  {{ c.nombre }} {{ c.apellido }} ({{ c.cliente_id }})
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Propiedad <span class="req">*</span></label>
+              <select formControlName="propiedadId">
+                <option [ngValue]="null">— Seleccione —</option>
+                <option *ngFor="let p of propiedadesFiltradas" [ngValue]="p.inmueble_id">
+                  {{ p.nombreInmueble }} – S/ {{ p.precioInmueble | number:'1.0-0' }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Entidad financiera <span class="req">*</span></label>
+              <select formControlName="entidadFinancieraId">
+                <option [ngValue]="null">— Seleccione —</option>
+                <option *ngFor="let e of entidades" [ngValue]="e.entidadFinanciera_id">
+                  {{ e.nombre }} (TEA {{ e.TEAmin }}% – {{ e.TEAmax }}%)
+                </option>
+              </select>
+            </div>
+
+            <!-- Línea 2 -->
+            <div class="form-group">
+              <label>Moneda</label>
+              <select formControlName="moneda">
+                <option value="PEN">PEN</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Precio de la propiedad</label>
+              <input type="number" formControlName="precioVenta" placeholder="0 = usar precio de la propiedad" />
+            </div>
+
+            <div class="form-group">
+              <label>Cuota inicial (S/.)</label>
+              <input type="number" formControlName="cuotaInicial" min="0" />
+            </div>
+
+            <!-- Línea 3 -->
+            <div class="form-group">
+              <label>Plazo (años)</label>
+              <input type="number" formControlName="tiempoAnios" min="1" />
+            </div>
+
+            <div class="form-group">
+              <label>Frecuencia de pago</label>
+              <select formControlName="frecuenciaPago">
+                <option *ngFor="let f of frecuencias" [ngValue]="f">
+                  {{ f }} <!-- 12, 6, 4, 2, 1 -->
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Tipo de año</label>
+              <select formControlName="tipoAnio">
+                <option *ngFor="let a of aniosBase" [ngValue]="a">{{ a }}</option>
+              </select>
+            </div>
+
+            <!-- Línea 4 -->
+            <div class="form-group">
+              <label>Tipo de gracia</label>
+              <select formControlName="tipoGracia">
+                <option *ngFor="let t of tiposGracia" [ngValue]="t">{{ t }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Cantidad de gracia</label>
+              <input type="number" formControlName="cantidadGracia" min="0" />
+            </div>
+
+            <div class="form-group">
+              <label>TEA (%) (opcional)</label>
+              <input type="number" formControlName="tasaEfectivaAnual" step="0.0001" placeholder="Dejar vacío para usar TEA mínima" />
+            </div>
+          </div>
+
+          <!-- Bono -->
+          <div class="box">
+            <div class="box-row">
+              <label class="check">
+                <input type="checkbox" formControlName="aplicarBono" />
+                <span>¿Aplicar bono?</span>
+              </label>
+
+              <div class="inline">
+                <label>Bono tipo</label>
+                <input type="text" formControlName="bonoTipo" placeholder="BBP / BBI (opcional)" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Costos -->
+          <div class="costos">
+            <div class="costos-top">
+              <h3>Costos adicionales</h3>
+              <button type="button" class="btn small" (click)="addCosto()">+ Agregar costo</button>
+            </div>
+
+            <div *ngFor="let c of costosFA.controls; let i = index" class="costo-row" [formGroup]="c">
+              <input class="w-60" type="text" formControlName="nombreCosto" placeholder="Nombre del costo" />
+              <input class="w-30" type="number" formControlName="valor" placeholder="Valor (S/.)" />
+              <button type="button" class="btn danger small" (click)="removeCosto(i)">Quitar</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-save" type="submit" [disabled]="form.invalid || isSaving">
+              {{ isSaving ? 'Guardando…' : 'Guardar simulación' }}
+            </button>
+            <button class="btn btn-cancel" type="button" (click)="cancel()">Cancelar</button>
+          </div>
+
+          <p *ngIf="error" class="error-msg">{{ error }}</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

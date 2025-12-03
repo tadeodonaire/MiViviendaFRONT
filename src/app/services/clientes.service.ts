@@ -13,7 +13,7 @@ const base_url = environment.base;
 export class ClientesService {
   private url = `${base_url}/clientes`;
   private listaCambio = new Subject<Clientes[]>();
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
   list() {
     return this.http.get<Clientes[]>(this.url);
   }
@@ -34,5 +34,11 @@ export class ClientesService {
   }
   deleteR(id: number) {
     return this.http.delete(`${this.url}/${id}`);
+  }
+  listMine() {
+    return this.http.get<Clientes[]>(`${this.url}/mios`);
+  }
+  listByUsuario(userId: number) {
+    return this.http.get<Clientes[]>(`${this.url}/por-usuario/${userId}`);
   }
 }

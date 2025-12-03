@@ -10,6 +10,14 @@ import { Router, RouterOutlet } from '@angular/router';
 export class InicioComponent {
   constructor(private router: Router) { }
 
+  crearSimulacion() {
+    this.router.navigate(['simulaciones/nuevo']);
+  }
+
+  verSimulaciones() {
+    this.router.navigate(['simulaciones']);
+  }
+
   verAjsutes() {
     this.router.navigate(['ajustes']);
   }
