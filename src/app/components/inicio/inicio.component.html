@@ -2,27 +2,32 @@
   <!-- Header -->
   <header class="dashboard-header">
     <div class="logo-section">
-      <img src="assets/mivivienda-logo.png" alt="MiVivienda" class="logo-header">
+      <img
+        src="assets/mivivienda-logo.png"
+        alt="MiVivienda"
+        class="logo-header"
+      />
       <h1>Simulador Hipotecario</h1>
     </div>
 
     <div class="actions-section">
-      <button class="logout-btn">Cerrar Sesión</button>
-      <img src="assets/avatar.png" alt="Perfil" class="avatar-icon">
+      <button class="logout-btn" (click)="cerrarSesion()">Cerrar Sesión</button>
+      <img src="assets/avatar.png" alt="Perfil" class="avatar-icon" />
     </div>
   </header>
 
   <!-- Contenido principal -->
   <main class="dashboard-main">
-    <img src="assets/upc-logo.png" alt="UPC" class="upc-logo">
+    <img src="assets/upc-logo.png" alt="UPC" class="upc-logo" />
 
     <div class="btn-group">
-      <button class="action-btn" >Nueva simulación</button>
-      <button class="action-btn" >Ver simulaciones</button>
-      <button class="action-btn" (click)="verAjsutes()">Ajustes </button>
+      <button class="action-btn">Nueva simulación</button>
+      <button class="action-btn" (click)="verSimulaciones()">
+        Ver simulaciones
+      </button>
+      <button class="action-btn" (click)="verAjustes()">Ajustes</button>
     </div>
 
     <router-outlet></router-outlet>
-
   </main>
 </div>
