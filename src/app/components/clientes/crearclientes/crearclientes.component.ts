@@ -31,27 +31,33 @@ export class CrearclientesComponent {
      dni: ['', Validators.required],
      ingresosMensuales: ['', Validators.required],
      moneda: ['', Validators.required],
-     usuarios_usuario_id: ['', Validators.required],
+     usuario: ['', Validators.required],
    });
    this.uS.list().subscribe((data) => {
      this.listaUsuarios = data;
    });
  }
- aceptar() {
-   if (this.form.valid) {
-    this.clientes.nombre = this.form.value.nombre;
-    this.clientes.apellido = this.form.value.apellido;
-    this.clientes.correo = this.form.value.correo;
-    this.clientes.dni = this.form.value.dni;
-    this.clientes.ingresosMensuales = this.form.value.ingresosMensuales;
-    this.clientes.moneda = this.form.value.moneda;
-    this.clientes.usuarios_usuario_id = this.form.value.husuarios_usuario_id;
-    this.cS.insert(this.clientes).subscribe(() => {
-       this.uS.list().subscribe((data) => {
-         this.uS.setList(data);
-       });
-     });
-     this.router.navigate(['clientes']);
-   }
- }
+   aceptar() {
+    if (this.form.valid) {
+      // Campos simples
+      this.clientes.nombre = this.form.value.nombre;
+      this.clientes.apellido = this.form.value.apellido;
+      this.clientes.correo = this.form.value.correo;
+      this.clientes.dni = Number(this.form.value.dni);
+      this.clientes.ingresosMensuales = Number(this.form.value.ingresosMensuales);
+      this.clientes.moneda = this.form.value.moneda; // "USD" | "EUR" | "SOL"
+
+      // ⚠️ Construir el objeto Usuarios a partir del ID seleccionado
+      const usuarioId = Number(this.form.value.usuario);
+      this.clientes.usuarios_usuario_id = { usuario_id: usuarioId } as Usuarios;
+
+      this.cS.insert(this.clientes).subscribe(() => {
+        // refresco opcional de usuarios
+        this.uS.list().subscribe((data) => this.uS.setList(data));
+        this.router.navigate(['clientes']);
+      });
+    } else {
+      this.form.markAllAsTouched();
+    }
+  }
 }
