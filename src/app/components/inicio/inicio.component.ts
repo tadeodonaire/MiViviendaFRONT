@@ -5,22 +5,27 @@ import { Router, RouterOutlet } from '@angular/router';
   selector: 'app-inicio',
   imports: [RouterOutlet],
   templateUrl: './inicio.component.html',
-  styleUrl: './inicio.component.css'
+  styleUrl: './inicio.component.css',
 })
 export class InicioComponent {
-  constructor(private router: Router) { }
+  constructor(private router: Router) {}
 
   crearSimulacion() {
     this.router.navigate(['simulaciones/nuevo']);
   }
 
-  verSimulaciones() {
-    this.router.navigate(['simulaciones']);
-  }
-
-  verAjsutes() {
+  verAjustes() {
     this.router.navigate(['ajustes']);
   }
 
-  
+  verSimulaciones() {
+    this.router.navigate(['versimulaciones']);
+  }
+
+  cerrarSesion() {
+    localStorage.clear();
+    sessionStorage.clear();
+
+    this.router.navigate(['login']);
+  }
 }

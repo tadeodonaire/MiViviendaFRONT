@@ -19,6 +19,8 @@ import { CrearpropiedadesComponent } from './components/propiedades/crearpropied
 import { SimulacionesComponent } from './components/simulaciones/simulaciones.component';
 import { CreareditarsimulacionesComponent } from './components/simulaciones/creareditarsimulaciones/creareditarsimulaciones.component';
 import { VerSimulacionComponent } from './components/simulaciones/versimulacion/versimulacion.component';
+import { SimulacionesAnterioresComponent } from './components/inicio/simulaciones-anteriores/simulaciones-anteriores.component';
+
 
 export const routes: Routes = [
   {
@@ -39,6 +41,12 @@ export const routes: Routes = [
   {
     path: 'ajustes',
     component: AjustesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  {
+    path: 'versimulaciones',
+    component: SimulacionesAnterioresComponent,
     canActivate: [seguridadGuard],
     data: { roles: ['Consultor'] },
   },
