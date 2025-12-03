@@ -14,7 +14,7 @@
           </div>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
           <div class="grid">
             <!-- Cliente / Propiedad / Entidad -->
             <div class="form-group">
@@ -57,18 +57,29 @@
 
             <div class="form-group">
               <label>Precio de la propiedad</label>
-              <input type="number" formControlName="precioVenta" placeholder="0 = usar precio de la propiedad" />
+              <input type="number" formControlName="precioVenta" [readOnly]="lockPrice" />
+              <small class="hint" *ngIf="propSel">
+                Precio actual de la propiedad: <b>S/ {{ propSel.precioInmueble | number:'1.0-2' }}</b>
+              </small>
             </div>
 
             <div class="form-group">
               <label>Cuota inicial (S/.)</label>
-              <input type="number" formControlName="cuotaInicial" min="0" />
+              <input type="number" formControlName="cuotaInicial" [attr.min]="minCuotaSoles" step="0.01" />
+              <small class="hint" *ngIf="entidadSel">
+                Mínimo: <b>S/ {{ minCuotaSoles | number:'1.2-2' }}</b>
+                ({{ entidadSel.cuotaInicialMin }}% de {{ (form.value.precioVenta || 0) | number:'1.0-0' }})
+              </small>
             </div>
 
             <!-- Línea 3 -->
             <div class="form-group">
               <label>Plazo (años)</label>
-              <input type="number" formControlName="tiempoAnios" min="1" />
+              <input type="number" formControlName="tiempoAnios" [attr.min]="plazoRange.min"
+                [attr.max]="plazoRange.max" />
+              <small class="hint" *ngIf="entidadSel">
+                Rango permitido: <b>{{ plazoRange.min }} – {{ plazoRange.max }}</b> años
+              </small>
             </div>
 
             <div class="form-group">
@@ -95,14 +106,23 @@
               </select>
             </div>
 
+            <!-- Cantidad de gracia con máximo dinámico -->
             <div class="form-group">
               <label>Cantidad de gracia</label>
-              <input type="number" formControlName="cantidadGracia" min="0" />
+              <input type="number" formControlName="cantidadGracia" [attr.min]="0" [attr.max]="maxGracia" />
+              <small class="hint">
+                Máx. permitido: <b>{{ maxGracia }}</b> periodos
+                ({{ form.value.tiempoAnios }} × {{ form.value.frecuenciaPago }})
+              </small>
             </div>
 
             <div class="form-group">
               <label>TEA (%) (opcional)</label>
-              <input type="number" formControlName="tasaEfectivaAnual" step="0.0001" placeholder="Dejar vacío para usar TEA mínima" />
+              <input type="number" formControlName="tasaEfectivaAnual" [attr.min]="teaRange.min"
+                [attr.max]="teaRange.max" step="0.0001" placeholder="Dejar vacío para usar TEA mínima" />
+              <small class="hint" *ngIf="entidadSel">
+                Rango entidad: <b>{{ teaRange.min }}% – {{ teaRange.max }}%</b>
+              </small>
             </div>
           </div>
 
@@ -146,5 +166,45 @@
         </form>
       </div>
     </div>
+  </div>
+</div>
+
+<div *ngIf="showCronograma" class="cronograma-card">
+  <h3>Resultado de la simulación</h3>
+  <div class="resumen">
+    <p><strong>Monto a financiar:</strong> {{ simulacion.montoPrestamo | number:'1.2-2' }}</p>
+    <p><strong>Cuota (francesa, sin seguros):</strong> {{ simulacion.cuotaFija | number:'1.2-2' }}</p>
+    <p><strong>TEA:</strong> {{ simulacion.valorTasa * 100 | number:'1.2-2' }}%</p>
+  </div>
+
+  <div class="tabla-scroll">
+    <table class="tabla-cronograma">
+      <thead>
+        <tr>
+          <th>Per</th>
+          <th>Saldo inicial</th>
+          <th>Interés</th>
+          <th>Amortización</th>
+          <th>Cuota</th>
+          <th>Seg. desgrav.</th>
+          <th>Seg. inmueble</th>
+          <th>Cuota total</th>
+          <th>Saldo final</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of cronograma">
+          <td>{{ r.periodo }}</td>
+          <td>{{ r.saldoInicial | number:'1.2-2' }}</td>
+          <td>{{ r.interes | number:'1.2-2' }}</td>
+          <td>{{ r.amortizacion | number:'1.2-2' }}</td>
+          <td>{{ r.cuota | number:'1.2-2' }}</td>
+          <td>{{ r.seguroDesgravamen | number:'1.2-2' }}</td>
+          <td>{{ r.seguroInmueble | number:'1.2-2' }}</td>
+          <td>{{ r.cuotaTotal | number:'1.2-2' }}</td>
+          <td>{{ r.saldoFinal | number:'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

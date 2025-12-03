@@ -2,7 +2,7 @@ export type Moneda = 'PEN' | 'USD';
 export type TipoGracia = 'SIN_GRACIA' | 'TOTAL' | 'PARCIAL';
 
 export interface SimulacionRequest {
-propiedadId: number;
+  propiedadId: number;
   entidadFinancieraId: number;
 
   moneda: Moneda;

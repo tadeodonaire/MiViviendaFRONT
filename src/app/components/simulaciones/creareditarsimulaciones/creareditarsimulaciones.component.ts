@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Moneda, SimulacionRequest, TipoGracia } from '../../../models/simulacion-request';
 import { CommonModule } from '@angular/common';
@@ -10,27 +10,32 @@ import { PropiedadesService } from '../../../services/propiedades.service';
 import { EntidadesFinancierasService } from '../../../services/entidades-financieras.service';
 import { SimulacionesService } from '../../../services/simulaciones.service';
 import { Router } from '@angular/router';
+import { SimulacionConCronogramaResponse, SimulacionCronogramaDTO } from '../../../models/simulacion-respuesta';
+import { Simulaciones } from '../../../models/simulaciones';
 
-type SimForm = FormGroup<{
+import { debounceTime, filter } from 'rxjs/operators';
+
+type CostoFG = FormGroup<{
+  nombreCosto: FormControl<string | null>;
+  valor: FormControl<number | null>;
+}>;
+
+type FSim = FormGroup<{
   clienteId: FormControl<number | null>;
   propiedadId: FormControl<number | null>;
   entidadFinancieraId: FormControl<number | null>;
-
-  moneda: FormControl<Moneda>;
+  moneda: FormControl<'PEN' | 'USD' | null>;
   precioVenta: FormControl<number | null>;
   cuotaInicial: FormControl<number | null>;
   tiempoAnios: FormControl<number | null>;
   frecuenciaPago: FormControl<number | null>;
-  tipoAnio: FormControl<360 | 365>;
-
-  tipoGracia: FormControl<TipoGracia>;
+  tipoAnio: FormControl<360 | 365 | null>;
+  tipoGracia: FormControl<'SIN_GRACIA' | 'TOTAL' | 'PARCIAL' | null>;
   cantidadGracia: FormControl<number | null>;
-
-  aplicarBono: FormControl<boolean>;
+  aplicarBono: FormControl<boolean | null>;
   bonoTipo: FormControl<string | null>;
   tasaEfectivaAnual: FormControl<number | null>;
-
-  costos: FormArray<FormGroup<{ nombreCosto: FormControl<string>, valor: FormControl<number | null> }>>;
+  costos: FormArray<CostoFG>;
 }>;
 
 @Component({
@@ -39,164 +44,330 @@ type SimForm = FormGroup<{
   templateUrl: './creareditarsimulaciones.component.html',
   styleUrl: './creareditarsimulaciones.component.css'
 })
-export class CreareditarsimulacionesComponent {
-  form: SimForm;
-
-  // data
-  clientes: Clientes[] = [];
-  propiedadesAll: Propiedades[] = [];
-  propiedadesFiltradas: Propiedades[] = [];
-  entidades: EntidadesFinancieras[] = [];
-
-  isSaving = false;
-  error: string | null = null;
+export class CreareditarsimulacionesComponent implements OnInit {
+  form: FSim;
 
   // combos
-  frecuencias = [12, 6, 4, 2, 1]; // mensual, bimestral, trimestral, semestral, anual
-  aniosBase: Array<360 | 365> = [360, 365];
+  clientes: Clientes[] = [];
+  entidades: EntidadesFinancieras[] = [];
+  propiedades: Propiedades[] = [];
+  propiedadesFiltradas: Propiedades[] = [];
+
+  frecuencias = [12, 6, 4, 2, 1] as const;
+  aniosBase: (360 | 365)[] = [360, 365];
   tiposGracia: TipoGracia[] = ['SIN_GRACIA', 'TOTAL', 'PARCIAL'];
+
+  // flags/resultados
+  isSaving = false;
+  error: string | null = null;
+  showCronograma = false;
+  cronograma: SimulacionCronogramaDTO[] = [];
+  simulacion!: Simulaciones;
+
+  // datos dependientes
+  entidadSel?: EntidadesFinancieras;
+  propSel?: Propiedades;
+
+  // límites dinámicos
+  lockPrice = true;                  // ← deja el precio en solo lectura
+  minCuotaSoles = 0;
+  maxCuotaSoles = 0;                 // = precio
+  teaRange = { min: 0, max: 0 };
+  plazoRange = { min: 1, max: 40 };
+  maxGracia = 0;
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
-    private cliSrv: ClientesService,
+    private simSrv: SimulacionesService,
+    private clientesSrv: ClientesService,
     private propSrv: PropiedadesService,
     private entSrv: EntidadesFinancierasService,
-    private simSrv: SimulacionesService,
+    private router: Router
   ) {
     this.form = this.fb.group({
-      clienteId: this.fb.control<number | null>(null, Validators.required),
-      propiedadId: this.fb.control<number | null>(null, Validators.required),
-      entidadFinancieraId: this.fb.control<number | null>(null, Validators.required),
-
-      moneda: this.fb.nonNullable.control<Moneda>('PEN', Validators.required),
-      precioVenta: this.fb.control<number | null>(null), // 0 o null => back usa el de la propiedad
-      cuotaInicial: this.fb.control<number | null>(0, [Validators.min(0)]),
-      tiempoAnios: this.fb.control<number | null>(15, [Validators.required, Validators.min(1)]),
-      frecuenciaPago: this.fb.control<number | null>(12, [Validators.required]),
-      tipoAnio: this.fb.nonNullable.control<360 | 365>(360, Validators.required),
-
-      tipoGracia: this.fb.nonNullable.control<TipoGracia>('SIN_GRACIA', Validators.required),
-      cantidadGracia: this.fb.control<number | null>({ value: null, disabled: true }, [Validators.min(0)]),
-
-      aplicarBono: this.fb.nonNullable.control<boolean>(false),
+      clienteId: this.fb.control<number | null>(null, { validators: [Validators.required], nonNullable: false }),
+      propiedadId: this.fb.control<number | null>(null, { validators: [Validators.required], nonNullable: false }),
+      entidadFinancieraId: this.fb.control<number | null>(null, { validators: [Validators.required], nonNullable: false }),
+      moneda: this.fb.control<'PEN' | 'USD' | null>('PEN', { validators: [Validators.required], nonNullable: false }),
+      precioVenta: this.fb.control<number | null>(null),  // se setea desde la propiedad
+      cuotaInicial: this.fb.control<number | null>(0, { validators: [Validators.required], updateOn: 'blur' }),
+      tiempoAnios: this.fb.control<number | null>(15, { validators: [Validators.required], updateOn: 'blur' }),
+      frecuenciaPago: this.fb.control<number | null>(12, { validators: [Validators.required], nonNullable: false }),
+      tipoAnio: this.fb.control<360 | 365 | null>(360, { validators: [Validators.required], nonNullable: false }),
+      tipoGracia: this.fb.control<'SIN_GRACIA' | 'TOTAL' | 'PARCIAL' | null>('SIN_GRACIA', { validators: [Validators.required], nonNullable: false }),
+      cantidadGracia: this.fb.control<number | null>(null),
+      aplicarBono: this.fb.control<boolean | null>(false),
       bonoTipo: this.fb.control<string | null>(null),
-      tasaEfectivaAnual: this.fb.control<number | null>(null), // null => usar TEA mínima de la entidad
-
-      costos: this.fb.array<FormGroup<{ nombreCosto: FormControl<string>, valor: FormControl<number | null> }>>([])
+      tasaEfectivaAnual: this.fb.control<number | null>(null, { updateOn: 'blur' }),
+      costos: this.fb.array<CostoFG>([])
     });
-
-    // listeners
-    this.form.get('clienteId')!.valueChanges.subscribe(cliId => {
-      this.onClienteChange(cliId ?? null);
-    });
-
-    this.form.get('propiedadId')!.valueChanges.subscribe(pid => {
-      const p = this.propiedadesFiltradas.find(x => x.inmueble_id === pid);
-      if (p) {
-        this.form.get('precioVenta')!.setValue(p.precioInmueble); // prefill
-      }
-    });
-
-    this.form.get('tipoGracia')!.valueChanges.subscribe(tg => {
-      const c = this.form.get('cantidadGracia')!;
-      if (tg === 'SIN_GRACIA') {
-        c.disable();
-        c.setValue(null);
-      } else {
-        c.enable();
-      }
-    });
-  }
-
-  get costosFA() {
-    return this.form.controls.costos;
-  }
-
-  addCosto() {
-    this.costosFA.push(
-      this.fb.group({
-        nombreCosto: this.fb.nonNullable.control<string>(''),
-        valor: this.fb.control<number | null>(0, [Validators.min(0)])
-      })
-    );
-  }
-  removeCosto(i: number) {
-    this.costosFA.removeAt(i);
   }
 
   ngOnInit(): void {
-    // clientes del usuario autenticado
-    this.cliSrv.listMine().subscribe({
-      next: data => this.clientes = data,
-      error: () => this.error = 'No se pudo cargar clientes.'
+    // Carga de combos
+    this.clientesSrv.list().subscribe(cs => this.clientes = cs);
+    this.entSrv.list().subscribe(es => this.entidades = es);
+    this.propSrv.list().subscribe(ps => { this.propiedades = ps; this.refiltrarPropiedades(); });
+
+    // Reacciones
+    this.form.get('clienteId')!.valueChanges.subscribe(() => {
+      this.form.get('propiedadId')!.reset(null);
+      this.refiltrarPropiedades();
     });
 
-    // todas las propiedades (filtraremos localmente por cliente)
-    this.propSrv.list().subscribe({
-      next: data => this.propiedadesAll = data,
-      error: () => this.error = 'No se pudo cargar propiedades.'
+    // Aplica estado inicial de gracia
+    this.toggleGracia(this.form.get('tipoGracia')!.value);
+    this.form.get('tipoGracia')!.valueChanges.subscribe(v => this.toggleGracia(v));
+
+    this.wireRestrictions();
+  }
+
+  // util: clamp
+  private clamp(v: number | null | undefined, min: number, max: number): number {
+    const n = Number(v ?? 0);
+    if (Number.isNaN(n)) return min;
+    return Math.min(Math.max(n, min), max);
+  }
+
+  // Filtra las propiedades según el cliente seleccionado
+  private refiltrarPropiedades(): void {
+    const cliId = this.form.get('clienteId')!.value;
+    this.propiedadesFiltradas = cliId
+      ? this.propiedades.filter(p => p.clientes_cliente_id?.cliente_id === cliId)
+      : this.propiedades;
+  }
+
+  private wireRestrictions(): void {
+    // PROPIEDAD → set precio y límites dependientes
+    this.form.get('propiedadId')!.valueChanges
+      .pipe(filter(id => !!id))
+      .subscribe(id => {
+        this.propSel = this.propiedades.find(p => p.inmueble_id === id);
+        const precio = this.propSel?.precioInmueble ?? 0;
+        this.form.get('precioVenta')!.setValue(precio, { emitEvent: false });
+        this.applyCuotaLimits();     // min/max en función de entidad + precio
+        this.applyGraceMax();        // max = años × frecuencia
+      });
+
+    // ENTIDAD → ranges (TEA, plazo) + cuota mínima
+    this.form.get('entidadFinancieraId')!.valueChanges
+      .pipe(filter(id => !!id))
+      .subscribe(id => {
+        this.entidadSel = this.entidades.find(e => e.entidadFinanciera_id === id);
+
+        // TEA
+        this.teaRange.min = this.entidadSel?.TEAmin ?? 0;
+        this.teaRange.max = this.entidadSel?.TEAmax ?? 0;
+        const teaCtrl = this.form.get('tasaEfectivaAnual')!;
+        teaCtrl.setValidators([Validators.min(this.teaRange.min), Validators.max(this.teaRange.max)]);
+        // sugerir TEAmin si está vacío
+        if ((teaCtrl.value == null || teaCtrl.value === undefined) && this.teaRange.min > 0) {
+          teaCtrl.setValue(this.teaRange.min, { emitEvent: false });
+        }
+        teaCtrl.updateValueAndValidity({ emitEvent: false });
+
+        // Plazo
+        this.plazoRange.min = this.entidadSel?.plazoMin ?? 1;
+        this.plazoRange.max = this.entidadSel?.plazoMax ?? 40;
+        const plazoCtrl = this.form.get('tiempoAnios')!;
+        plazoCtrl.setValidators([Validators.required, Validators.min(this.plazoRange.min), Validators.max(this.plazoRange.max)]);
+        // Clampea si está fuera
+        plazoCtrl.setValue(this.clamp(plazoCtrl.value, this.plazoRange.min, this.plazoRange.max), { emitEvent: false });
+        plazoCtrl.updateValueAndValidity({ emitEvent: false });
+
+        // Recalcular cuota mínima
+        this.applyCuotaLimits();
+      });
+
+    // PRECIO/PLAZO/FRECUENCIA → recalcular dependencias
+    this.form.get('precioVenta')!.valueChanges.pipe(debounceTime(50)).subscribe(() => this.applyCuotaLimits());
+    this.form.get('tiempoAnios')!.valueChanges.pipe(debounceTime(50)).subscribe(() => this.applyGraceMax());
+    this.form.get('frecuenciaPago')!.valueChanges.pipe(debounceTime(50)).subscribe(() => this.applyGraceMax());
+
+    // TEA clamp al volar
+    this.form.get('tasaEfectivaAnual')!.valueChanges.subscribe(v => {
+      if (this.teaRange.min === 0 && this.teaRange.max === 0) return;
+      const cl = this.clamp(v, this.teaRange.min, this.teaRange.max);
+      if (cl !== v) this.form.get('tasaEfectivaAnual')!.setValue(cl, { emitEvent: false });
     });
 
-    // entidades
-    this.entSrv.list().subscribe({
-      next: data => this.entidades = data,
-      error: () => this.error = 'No se pudieron cargar entidades financieras.'
+    // Plazo clamp si lo fuerzan
+    this.form.get('tiempoAnios')!.valueChanges.subscribe(v => {
+      const cl = this.clamp(v, this.plazoRange.min, this.plazoRange.max);
+      if (cl !== v) this.form.get('tiempoAnios')!.setValue(cl, { emitEvent: false });
+    });
+
+    // Cuota inicial clamp contra [min, max]
+    this.form.get('cuotaInicial')!.valueChanges.subscribe(v => {
+      const cl = this.clamp(v, this.minCuotaSoles, this.maxCuotaSoles);
+      if (cl !== v) this.form.get('cuotaInicial')!.setValue(cl, { emitEvent: false });
     });
   }
 
-  private onClienteChange(cliId: number | null) {
-    if (cliId == null) {
-      this.propiedadesFiltradas = [];
-      this.form.get('propiedadId')!.reset();
-      return;
+  private toggleGracia(tipo: TipoGracia | null) {
+    const cg = this.form.get('cantidadGracia')!;
+    if (tipo === 'SIN_GRACIA' || !tipo) {
+      cg.reset();
+      cg.disable({ emitEvent: false });
+    } else {
+      cg.enable({ emitEvent: false });
+      cg.setValidators([Validators.min(0), Validators.max(this.maxGracia)]);
+      cg.updateValueAndValidity({ emitEvent: false });
+      // clamp si estaba fuera
+      if (cg.value != null) {
+        const cl = this.clamp(cg.value, 0, this.maxGracia);
+        if (cl !== cg.value) cg.setValue(cl, { emitEvent: false });
+      }
     }
-    this.propiedadesFiltradas = this.propiedadesAll.filter(
-      p => p.clientes_cliente_id?.cliente_id === cliId
+  }
+
+  private applyCuotaLimits(): void {
+    const precio = Number(this.form.get('precioVenta')!.value ?? 0);
+    const pctMin = Number(this.entidadSel?.cuotaInicialMin ?? 0); // %
+    this.minCuotaSoles = precio > 0 ? +(precio * pctMin / 100).toFixed(2) : 0;
+    this.maxCuotaSoles = Math.max(0, precio);
+
+    const ctrl = this.form.get('cuotaInicial')!;
+    ctrl.setValidators([Validators.required, Validators.min(this.minCuotaSoles), Validators.max(this.maxCuotaSoles)]);
+    // clamp inmediato
+    ctrl.setValue(this.clamp(ctrl.value, this.minCuotaSoles, this.maxCuotaSoles), { emitEvent: false });
+    ctrl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private applyGraceMax(): void {
+    const anios = Number(this.form.get('tiempoAnios')!.value ?? 0);
+    const freq = Number(this.form.get('frecuenciaPago')!.value ?? 12);
+    this.maxGracia = Math.max(0, anios * freq);
+
+    const cg = this.form.get('cantidadGracia')!;
+    if (cg.enabled) {
+      cg.setValidators([Validators.min(0), Validators.max(this.maxGracia)]);
+      cg.setValue(this.clamp(cg.value, 0, this.maxGracia), { emitEvent: false });
+      cg.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
+  // === costos ===
+  get costosFA(): FormArray<CostoFG> {
+    return this.form.get('costos') as FormArray<CostoFG>;
+  }
+  addCosto(): void {
+    this.costosFA.push(
+      this.fb.group({
+        nombreCosto: this.fb.control<string | null>(null),
+        valor: this.fb.control<number | null>(null, [Validators.min(0)])
+      })
     );
-    // reset propiedad al cambiar cliente
-    this.form.get('propiedadId')!.reset();
+  }
+  removeCosto(i: number): void { this.costosFA.removeAt(i); }
+
+  // ===== wiring con tipos en callbacks =====
+  private wireReactions(): void {
+    // Propiedad -> autollenar precio y recalcular mínimos
+    this.form.get('propiedadId')!.valueChanges.subscribe((id: number | null) => {
+      this.propSel = this.propiedades.find(p => p.inmueble_id === id);
+      const precio = this.propSel?.precioInmueble ?? 0;
+      this.form.get('precioVenta')!.setValue(precio, { emitEvent: false });
+      this.recalcMinCuota();
+      this.recalcMaxGracia();
+    });
+
+    // Entidad -> TEA, plazo y mínimo de cuota
+    this.form.get('entidadFinancieraId')!.valueChanges.subscribe((id: number | null) => {
+      this.entidadSel = this.entidades.find(e => e.entidadFinanciera_id === id);
+      this.teaRange.min = this.entidadSel?.TEAmin ?? 0;
+      this.teaRange.max = this.entidadSel?.TEAmax ?? 0;
+
+      const teaCtrl = this.form.get('tasaEfectivaAnual')!;
+      teaCtrl.setValidators([Validators.min(this.teaRange.min), Validators.max(this.teaRange.max)]);
+      if (!teaCtrl.value && this.teaRange.min > 0) teaCtrl.setValue(this.teaRange.min, { emitEvent: false });
+      teaCtrl.updateValueAndValidity({ emitEvent: false });
+
+      this.plazoRange.min = this.entidadSel?.plazoMin ?? 1;
+      this.plazoRange.max = this.entidadSel?.plazoMax ?? 40;
+
+      const plazoCtrl = this.form.get('tiempoAnios')!;
+      plazoCtrl.setValidators([Validators.required, Validators.min(this.plazoRange.min), Validators.max(this.plazoRange.max)]);
+      plazoCtrl.updateValueAndValidity({ emitEvent: false });
+
+      this.recalcMinCuota();
+    });
+
+    // Cambios que afectan gracia/cuota
+    this.form.get('precioVenta')!.valueChanges.subscribe(() => this.recalcMinCuota());
+    this.form.get('tiempoAnios')!.valueChanges.subscribe(() => this.recalcMaxGracia());
+    this.form.get('frecuenciaPago')!.valueChanges.subscribe(() => this.recalcMaxGracia());
+
+    this.form.get('tipoGracia')!.valueChanges.subscribe((tg: 'SIN_GRACIA' | 'TOTAL' | 'PARCIAL' | null) => {
+      const c = this.form.get('cantidadGracia')!;
+      if (tg === 'SIN_GRACIA') {
+        c.reset(); c.disable({ emitEvent: false });
+      } else {
+        c.enable({ emitEvent: false });
+        c.setValidators([Validators.min(0), Validators.max(this.maxGracia)]);
+        c.updateValueAndValidity({ emitEvent: false });
+      }
+    });
   }
 
-  submit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-    this.isSaving = true;
-    this.error = null;
+  private recalcMinCuota(): void {
+    const precio = Number(this.form.get('precioVenta')!.value ?? 0);
+    const pct = Number(this.entidadSel?.cuotaInicialMin ?? 0);
+    this.minCuotaSoles = precio > 0 ? +(precio * pct / 100).toFixed(2) : 0;
 
-    const v = this.form.getRawValue(); // incluye cantidadGracia si está habilitada
+    const cuotaCtrl = this.form.get('cuotaInicial')!;
+    cuotaCtrl.setValidators([Validators.required, Validators.min(this.minCuotaSoles)]);
+    cuotaCtrl.updateValueAndValidity({ emitEvent: false });
+  }
 
-    const payload: SimulacionRequest = {
-      propiedadId: v.propiedadId!,
-      entidadFinancieraId: v.entidadFinancieraId!,
-      moneda: v.moneda,                        // 'PEN'
-      precioVenta: v.precioVenta == null ? 0 : Number(v.precioVenta), // 0 => usa de la propiedad
-      cuotaInicial: Number(v.cuotaInicial || 0),
-      tiempoAnios: Number(v.tiempoAnios),
-      frecuenciaPago: Number(v.frecuenciaPago),
-      tipoAnio: v.tipoAnio,
-      tipoGracia: v.tipoGracia,
-      cantidadGracia: v.tipoGracia === 'SIN_GRACIA' ? 0 : (v.cantidadGracia ?? 0),
-      aplicarBono: !!v.aplicarBono,
-      bonoTipo: v.aplicarBono ? (v.bonoTipo || null) : null,
-      tasaEfectivaAnual: v.tasaEfectivaAnual == null || v.tasaEfectivaAnual === 0
-        ? null
-        : Number(v.tasaEfectivaAnual),
-      costos: this.costosFA.controls.map((c) => {
-        const raw = c.getRawValue(); // <- evita el string | undefined
-        return {
-          nombreCosto: raw.nombreCosto,
-          valor: Number(raw.valor ?? 0),
-        };
-      }),
+  private recalcMaxGracia(): void {
+    const anios = Number(this.form.get('tiempoAnios')!.value ?? 0);
+    const freq = Number(this.form.get('frecuenciaPago')!.value ?? 12);
+    this.maxGracia = Math.max(0, anios * freq);
+
+    const c = this.form.get('cantidadGracia')!;
+    c.setValidators([Validators.min(0), Validators.max(this.maxGracia)]);
+    c.updateValueAndValidity({ emitEvent: false });
+  }
+
+  // ===== request/submit =====
+  private buildPayload(): SimulacionRequest {
+    const v = this.form.value;
+    const cantGracia = v.tipoGracia === 'SIN_GRACIA' ? null : (v.cantidadGracia ?? null);
+    const costos = (v.costos ?? [])
+      .map(c => ({ nombreCosto: String(c?.nombreCosto ?? '').trim(), valor: Number(c?.valor ?? 0) }))
+      .filter(c => c.nombreCosto.length > 0 && !Number.isNaN(c.valor));
+
+    return {
+      propiedadId: Number(v.propiedadId),
+      entidadFinancieraId: Number(v.entidadFinancieraId),
+      moneda: (v.moneda ?? 'PEN'),
+      precioVenta: Number(v.precioVenta ?? 0),
+      cuotaInicial: Number(v.cuotaInicial ?? 0),
+      tiempoAnios: Number(v.tiempoAnios ?? 0),
+      frecuenciaPago: Number(v.frecuenciaPago ?? 12),
+      tipoAnio: (v.tipoAnio ?? 360),
+      tipoGracia: (v.tipoGracia ?? 'SIN_GRACIA'),
+      cantidadGracia: cantGracia,
+      aplicarBono: Boolean(v.aplicarBono),
+      bonoTipo: (v.bonoTipo && v.bonoTipo.trim().length ? v.bonoTipo.trim() : null),
+      tasaEfectivaAnual: (v.tasaEfectivaAnual ?? null),
+      costos: costos.length ? costos : undefined
     };
+  }
+
+  onSubmit(): void {
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    const payload = this.buildPayload();
+    this.isSaving = true; this.error = null;
 
     this.simSrv.crear(payload).subscribe({
-      next: () => {
+      next: (resp: SimulacionConCronogramaResponse) => {
+        this.router.navigate(['/simulaciones', resp.simulacion.simulacion_id], { state: { hoja: resp }});
         this.isSaving = false;
-        this.router.navigate(['/simulaciones']); // ajusta ruta de retorno si difiere
+        this.simulacion = resp.simulacion;
+        this.cronograma = resp.cronograma;
+        this.showCronograma = true;
       },
       error: (e) => {
         console.error(e);
@@ -206,7 +377,5 @@ export class CreareditarsimulacionesComponent {
     });
   }
 
-  cancel(): void {
-    this.router.navigate(['/simulaciones']);
-  }
+  cancel(): void { this.router.navigate(['/inicio']); }
 }

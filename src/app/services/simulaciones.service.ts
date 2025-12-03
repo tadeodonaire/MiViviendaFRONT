@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Simulaciones } from '../models/simulaciones';
 import { SimulacionRequest } from '../models/simulacion-request';
+import { SimulacionConCronogramaResponse } from '../models/simulacion-respuesta';
 
 const base_url = environment.base;
 
@@ -15,7 +16,13 @@ export class SimulacionesService {
 
   constructor(private http: HttpClient) { }
 
-  crear(req: SimulacionRequest) {
-    return this.http.post<Simulaciones>(`${this.url}/crear`, req);
+  crear(req: SimulacionRequest): Observable<SimulacionConCronogramaResponse> {
+    return this.http.post<SimulacionConCronogramaResponse>(`${this.url}/crear`, req);
   }
+
+  // simulaciones.service.ts
+  getHoja(id: number) {
+    return this.http.get<SimulacionConCronogramaResponse>(`${this.url}/simulaciones/${id}/hoja`);
+  }
+
 }

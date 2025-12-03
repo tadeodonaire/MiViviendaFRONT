@@ -18,6 +18,7 @@ import { PropiedadesComponent } from './components/propiedades/propiedades.compo
 import { CrearpropiedadesComponent } from './components/propiedades/crearpropiedades/crearpropiedades.component';
 import { SimulacionesComponent } from './components/simulaciones/simulaciones.component';
 import { CreareditarsimulacionesComponent } from './components/simulaciones/creareditarsimulaciones/creareditarsimulaciones.component';
+import { VerSimulacionComponent } from './components/simulaciones/versimulacion/versimulacion.component';
 
 export const routes: Routes = [
   {
@@ -125,4 +126,12 @@ export const routes: Routes = [
     canActivate: [seguridadGuard],
     data: { roles: ['Consultor'] },
   },
+  // app.routes.ts
+  {
+    path: 'simulaciones/:id',
+    component: VerSimulacionComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+
 ];
