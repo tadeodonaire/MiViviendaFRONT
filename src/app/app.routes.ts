@@ -16,6 +16,7 @@ import { BonosReglasComponent } from './components/bonos-reglas/bonos-reglas.com
 import { CreareditarbonosreglasComponent } from './components/bonos-reglas/creareditarbonosreglas/creareditarbonosreglas.component';
 import { PropiedadesComponent } from './components/propiedades/propiedades.component';
 import { CrearpropiedadesComponent } from './components/propiedades/crearpropiedades/crearpropiedades.component';
+import { SimulacionesAnterioresComponent } from './components/inicio/simulaciones-anteriores/simulaciones-anteriores.component';
 
 export const routes: Routes = [
   {
@@ -36,6 +37,12 @@ export const routes: Routes = [
   {
     path: 'ajustes',
     component: AjustesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  {
+    path: 'versimulaciones',
+    component: SimulacionesAnterioresComponent,
     canActivate: [seguridadGuard],
     data: { roles: ['Consultor'] },
   },
