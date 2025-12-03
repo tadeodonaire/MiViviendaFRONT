@@ -16,18 +16,21 @@ export class VerSimulacionComponent implements OnInit {
   data = signal<SimulacionConCronogramaResponse | null>(null);
 
   // totales
-  tInteres   = computed(() => this.sum('interes'));
-  tAmort     = computed(() => this.sum('amortizacion'));
-  tSegDesg   = computed(() => this.sum('seguroDesgravamen'));
-  tSegInm    = computed(() => this.sum('seguroInmueble'));
+  tInteres = computed(() => this.sum('interes'));
+  tAmort = computed(() => this.sum('amortizacion'));
+  tSegDesg = computed(() => this.sum('seguroDesgravamen'));
+  tSegInm = computed(() => this.sum('seguroInmueble'));
   tCuotaBase = computed(() => this.sum('cuota'));
-  tCuotaTot  = computed(() => this.sum('cuotaTotal'));
+  tCuotaTot = computed(() => this.sum('cuotaTotal'));
+  tFlujo = computed(() => this.sum('flujo'));
+
+  trackByPeriodo = (_: number, r: SimulacionCronogramaDTO) => r.periodo;
 
   constructor(
     private route: ActivatedRoute,
     private simSrv: SimulacionesService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const state = history.state?.hoja as SimulacionConCronogramaResponse | undefined;
@@ -58,13 +61,13 @@ export class VerSimulacionComponent implements OnInit {
     return +rows.reduce((acc, r) => acc + (Number(r[field] ?? 0)), 0).toFixed(2);
   }
 
-  imprimir(){ window.print(); }
+  imprimir() { window.print(); }
 
-  exportCSV(){
+  exportCSV() {
     const hoja = this.data();
-    if(!hoja) return;
+    if (!hoja) return;
     const rows = hoja.cronograma;
-    const headers = ['Per','Saldo inicial','Interés','Amortización','Cuota','Seg. desgrav.','Seg. inmueble','Cuota total','Saldo final'];
+    const headers = ['Per', 'Saldo inicial', 'Interés', 'Amortización', 'Cuota', 'Seg. desgrav.', 'Seg. inmueble', 'Cuota total', 'Saldo final'];
     const lines = [
       headers.join(','),
       ...rows.map(r => [
@@ -79,5 +82,5 @@ export class VerSimulacionComponent implements OnInit {
     a.click(); URL.revokeObjectURL(url);
   }
 
-  volver(){ this.router.navigate(['/inicio']); }
+  volver() { this.router.navigate(['/inicio']); }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Moneda, SimulacionRequest, TipoGracia } from '../../../models/simulacion-request';
+import { CostoPeriodicidad, CostoTipo, Moneda, SimulacionRequest, TipoGracia } from '../../../models/simulacion-request';
 import { CommonModule } from '@angular/common';
 import { Clientes } from '../../../models/clientes';
 import { Propiedades } from '../../../models/propiedades';
@@ -18,6 +18,8 @@ import { debounceTime, filter } from 'rxjs/operators';
 type CostoFG = FormGroup<{
   nombreCosto: FormControl<string | null>;
   valor: FormControl<number | null>;
+  tipo: FormControl<CostoTipo | null>;
+  periodicidad: FormControl<CostoPeriodicidad | null>;
 }>;
 
 type FSim = FormGroup<{
@@ -56,6 +58,9 @@ export class CreareditarsimulacionesComponent implements OnInit {
   frecuencias = [12, 6, 4, 2, 1] as const;
   aniosBase: (360 | 365)[] = [360, 365];
   tiposGracia: TipoGracia[] = ['SIN_GRACIA', 'TOTAL', 'PARCIAL'];
+
+  tiposCosto: CostoTipo[] = ['INICIAL', 'RECURRENTE'];
+  periodicidades: CostoPeriodicidad[] = ['POR_CUOTA', 'MENSUAL', 'ANUAL'];
 
   // flags/resultados
   isSaving = false;
@@ -251,14 +256,25 @@ export class CreareditarsimulacionesComponent implements OnInit {
   get costosFA(): FormArray<CostoFG> {
     return this.form.get('costos') as FormArray<CostoFG>;
   }
+
   addCosto(): void {
-    this.costosFA.push(
-      this.fb.group({
-        nombreCosto: this.fb.control<string | null>(null),
-        valor: this.fb.control<number | null>(null, [Validators.min(0)])
-      })
-    );
+    const fg = this.fb.group({
+      nombreCosto: this.fb.control<string | null>(null),
+      valor: this.fb.control<number | null>(null, [Validators.min(0)]),
+      tipo: this.fb.control<CostoTipo | null>('INICIAL'),
+      periodicidad: this.fb.control<CostoPeriodicidad | null>('POR_CUOTA')
+    });
+    // habilita/deshabilita periodicidad según tipo
+    fg.get('tipo')!.valueChanges.subscribe(t => {
+      const per = fg.get('periodicidad')!;
+      if (t === 'INICIAL') { per.disable({ emitEvent: false }); }
+      else { per.enable({ emitEvent: false }); }
+    });
+    // estado inicial
+    fg.get('periodicidad')!.disable({ emitEvent: false });
+    this.costosFA.push(fg);
   }
+
   removeCosto(i: number): void { this.costosFA.removeAt(i); }
 
   // ===== wiring con tipos en callbacks =====
@@ -335,8 +351,13 @@ export class CreareditarsimulacionesComponent implements OnInit {
     const v = this.form.value;
     const cantGracia = v.tipoGracia === 'SIN_GRACIA' ? null : (v.cantidadGracia ?? null);
     const costos = (v.costos ?? [])
-      .map(c => ({ nombreCosto: String(c?.nombreCosto ?? '').trim(), valor: Number(c?.valor ?? 0) }))
-      .filter(c => c.nombreCosto.length > 0 && !Number.isNaN(c.valor));
+    .map(c => ({
+      nombreCosto: String(c?.nombreCosto ?? '').trim(),
+      valor: Number(c?.valor ?? 0),
+      tipo: (c?.tipo ?? 'INICIAL') as CostoTipo,
+      periodicidad: (c?.tipo === 'RECURRENTE' ? (c?.periodicidad ?? 'POR_CUOTA') : undefined) as any
+    }))
+    .filter(c => c.nombreCosto.length > 0 && !Number.isNaN(c.valor));
 
     return {
       propiedadId: Number(v.propiedadId),
@@ -363,7 +384,7 @@ export class CreareditarsimulacionesComponent implements OnInit {
 
     this.simSrv.crear(payload).subscribe({
       next: (resp: SimulacionConCronogramaResponse) => {
-        this.router.navigate(['/simulaciones', resp.simulacion.simulacion_id], { state: { hoja: resp }});
+        this.router.navigate(['/simulaciones', resp.simulacion.simulacion_id], { state: { hoja: resp } });
         this.isSaving = false;
         this.simulacion = resp.simulacion;
         this.cronograma = resp.cronograma;

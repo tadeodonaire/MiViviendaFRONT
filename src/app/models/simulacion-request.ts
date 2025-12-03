@@ -1,6 +1,16 @@
 export type Moneda = 'PEN' | 'USD';
 export type TipoGracia = 'SIN_GRACIA' | 'TOTAL' | 'PARCIAL';
 
+export type CostoTipo = 'INICIAL' | 'RECURRENTE';
+export type CostoPeriodicidad = 'POR_CUOTA' | 'MENSUAL' | 'ANUAL';
+
+export interface CostoAdicionalReq {
+  nombreCosto: string;
+  valor: number;               // S/.
+  tipo: CostoTipo;             // 'INICIAL' | 'RECURRENTE'
+  periodicidad?: CostoPeriodicidad; // solo si tipo === 'RECURRENTE'
+}
+
 export interface SimulacionRequest {
   propiedadId: number;
   entidadFinancieraId: number;
@@ -25,5 +35,5 @@ export interface SimulacionRequest {
   tasaEfectivaAnual: number | null;
 
   // Debe calzar con Costes_adicionalesDTO del back
-  costos?: Array<{ nombreCosto: string; valor: number }>;
+  costos?: CostoAdicionalReq[];
 }

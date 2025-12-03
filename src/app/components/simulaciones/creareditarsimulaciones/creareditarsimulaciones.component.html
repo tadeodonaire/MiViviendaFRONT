@@ -149,10 +149,17 @@
             </div>
 
             <div *ngFor="let c of costosFA.controls; let i = index" class="costo-row" [formGroup]="c">
-              <input class="w-60" type="text" formControlName="nombreCosto" placeholder="Nombre del costo" />
-              <input class="w-30" type="number" formControlName="valor" placeholder="Valor (S/.)" />
+              <input class="w-34" type="text" formControlName="nombreCosto" placeholder="Nombre del costo" />
+              <input class="w-18" type="number" formControlName="valor" placeholder="Valor (S/.)" />
+
+              <select class="w-18" formControlName="tipo">
+                <option *ngFor="let t of tiposCosto" [ngValue]="t">{{ t === 'INICIAL' ? 'Inicial' : 'Recurrente' }}
+                </option>
+              </select>
+
               <button type="button" class="btn danger small" (click)="removeCosto(i)">Quitar</button>
             </div>
+
           </div>
 
           <div class="actions">
@@ -166,45 +173,5 @@
         </form>
       </div>
     </div>
-  </div>
-</div>
-
-<div *ngIf="showCronograma" class="cronograma-card">
-  <h3>Resultado de la simulación</h3>
-  <div class="resumen">
-    <p><strong>Monto a financiar:</strong> {{ simulacion.montoPrestamo | number:'1.2-2' }}</p>
-    <p><strong>Cuota (francesa, sin seguros):</strong> {{ simulacion.cuotaFija | number:'1.2-2' }}</p>
-    <p><strong>TEA:</strong> {{ simulacion.valorTasa * 100 | number:'1.2-2' }}%</p>
-  </div>
-
-  <div class="tabla-scroll">
-    <table class="tabla-cronograma">
-      <thead>
-        <tr>
-          <th>Per</th>
-          <th>Saldo inicial</th>
-          <th>Interés</th>
-          <th>Amortización</th>
-          <th>Cuota</th>
-          <th>Seg. desgrav.</th>
-          <th>Seg. inmueble</th>
-          <th>Cuota total</th>
-          <th>Saldo final</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let r of cronograma">
-          <td>{{ r.periodo }}</td>
-          <td>{{ r.saldoInicial | number:'1.2-2' }}</td>
-          <td>{{ r.interes | number:'1.2-2' }}</td>
-          <td>{{ r.amortizacion | number:'1.2-2' }}</td>
-          <td>{{ r.cuota | number:'1.2-2' }}</td>
-          <td>{{ r.seguroDesgravamen | number:'1.2-2' }}</td>
-          <td>{{ r.seguroInmueble | number:'1.2-2' }}</td>
-          <td>{{ r.cuotaTotal | number:'1.2-2' }}</td>
-          <td>{{ r.saldoFinal | number:'1.2-2' }}</td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </div>
