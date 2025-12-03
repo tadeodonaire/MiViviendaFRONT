@@ -79,5 +79,5 @@ export class VerSimulacionComponent implements OnInit {
     a.click(); URL.revokeObjectURL(url);
   }
 
-  volver(){ this.router.navigate(['/simulaciones']); }
+  volver(){ this.router.navigate(['/inicio']); }
 }
