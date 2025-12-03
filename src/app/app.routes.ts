@@ -11,12 +11,16 @@ import { ClientesComponent } from './components/clientes/clientes.component';
 import { CrearclientesComponent } from './components/clientes/crearclientes/crearclientes.component';
 import { CreareditarentidadesfinancierasComponent } from './components/entidades-financieras/creareditarentidadesfinancieras/creareditarentidadesfinancieras.component';
 import { EntidadesFinancierasComponent } from './components/entidades-financieras/entidades-financieras.component';
-import { B } from '@angular/cdk/keycodes';
+import { B, S } from '@angular/cdk/keycodes';
 import { BonosReglasComponent } from './components/bonos-reglas/bonos-reglas.component';
 import { CreareditarbonosreglasComponent } from './components/bonos-reglas/creareditarbonosreglas/creareditarbonosreglas.component';
 import { PropiedadesComponent } from './components/propiedades/propiedades.component';
 import { CrearpropiedadesComponent } from './components/propiedades/crearpropiedades/crearpropiedades.component';
+import { SimulacionesComponent } from './components/simulaciones/simulaciones.component';
+import { CreareditarsimulacionesComponent } from './components/simulaciones/creareditarsimulaciones/creareditarsimulaciones.component';
+import { VerSimulacionComponent } from './components/simulaciones/versimulacion/versimulacion.component';
 import { SimulacionesAnterioresComponent } from './components/inicio/simulaciones-anteriores/simulaciones-anteriores.component';
+
 
 export const routes: Routes = [
   {
@@ -118,4 +122,24 @@ export const routes: Routes = [
     canActivate: [seguridadGuard],
     data: { roles: ['Consultor'] },
   },
+  {
+    path: 'simulaciones',
+    component: SimulacionesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  {
+    path: 'simulaciones/nuevo',
+    component: CreareditarsimulacionesComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+  // app.routes.ts
+  {
+    path: 'simulaciones/:id',
+    component: VerSimulacionComponent,
+    canActivate: [seguridadGuard],
+    data: { roles: ['Consultor'] },
+  },
+
 ];
