@@ -1,1 +1,69 @@
-<p>simulaciones-anteriores works!</p>
+<div class="page">
+  <header class="hero">
+    <img src="assets/mivivienda-logo.png" alt="Logo MiVivienda" class="hero-img left">
+    <h1 class="title">Simulaciones anteriores</h1>
+    <img src="assets/upc-logo.png" alt="Logo UPC" class="hero-img right">
+  </header>
+
+  <div class="list" *ngIf="loading">
+    <article class="card skeleton"></article>
+    <article class="card skeleton"></article>
+    <article class="card skeleton"></article>
+  </div>
+
+  <div class="empty" *ngIf="isEmpty">
+    <div class="empty-card">
+      <div class="empty-icon">ℹ️</div>
+      <div class="empty-title">No existen simulaciones</div>
+      <p class="empty-text">Aún no se han registrado simulaciones en el sistema.</p>
+    </div>
+  </div>
+
+  <div class="list" *ngIf="!loading && !isEmpty">
+    <ng-container *ngFor="let item of items">
+      <article class="card">
+        <div class="card-header">
+          <div class="badge">i</div>
+
+          <div class="client-block">
+            <div class="client-name">{{ item.nombre }} {{ item.apellido }}</div>
+            <div class="client-meta">
+              DNI: <strong>{{ item.dni }}</strong>
+              &nbsp; | &nbsp;
+              Ingresos mensuales:
+              <strong>{{ monedaSimbolo(item.moneda) }} {{ item.ingresosMensuales | number:'1.0-0' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn" (click)="toggle(item)">
+            {{ item.expanded ? 'Ocultar simulaciones' : 'Cargar simulaciones' }}
+          </button>
+        </div>
+
+        <div class="tree" *ngIf="item.expanded">
+          <ul class="tree-list">
+            <li class="tree-item" *ngFor="let sim of item.sims">
+              <div class="tree-left">
+                <span class="tree-bullet"></span>
+                <span class="sim-name">{{ nombreDeSimulacion(sim) }}</span>
+                <span class="sim-meta">
+                  Precio del inmueble:
+                  <strong>{{ monedaSimbolo(item.moneda) }} {{ (sim.precio_venta || sim.precio_inmueble) | number:'1.0-0' }}</strong>
+                </span>
+              </div>
+              <div class="tree-right">
+                <button class="btn-secondary" (click)="verSimulacion(sim)">Ver simulación</button>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </article>
+    </ng-container>
+  </div>
+
+  <div class="back-section">
+    <button class="btn-back" (click)="volverMenu()">⬅️ Volver al menú</button>
+  </div>
+</div>

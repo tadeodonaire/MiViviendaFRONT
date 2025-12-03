@@ -3,9 +3,10 @@ import { environment } from '../../environments/environments';
 import { Clientes } from '../models/clientes';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs/internal/Subject';
+import { Observable } from 'rxjs';
+import { VerSimulacionesDTO } from '../models/ver-simulacionesDTO';
 
 const base_url = environment.base;
-
 
 @Injectable({
   providedIn: 'root',
@@ -34,5 +35,8 @@ export class ClientesService {
   }
   deleteR(id: number) {
     return this.http.delete(`${this.url}/${id}`);
+  }
+  ver(): Observable<VerSimulacionesDTO[]> {
+    return this.http.get<VerSimulacionesDTO[]>(`${this.url}/ver-simulaciones`);
   }
 }
