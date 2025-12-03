@@ -34,7 +34,7 @@ export class ListarentidadesfinancierasComponent {
   }
 
   // Navegación (ajusta rutas si usas otras)
-  onBack(): void { this.router.navigate(['entidadfinanciera']); }
+  onBack(): void { this.router.navigate(['ajustes']); }
   onAgregar(): void { this.router.navigate(['entidadfinanciera/nuevo']); }
 
   // Helpers para llaves en minúsculas del backend (teamin/teamax)
