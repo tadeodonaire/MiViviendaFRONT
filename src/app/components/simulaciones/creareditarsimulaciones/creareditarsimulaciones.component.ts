@@ -14,6 +14,8 @@ import { SimulacionConCronogramaResponse, SimulacionCronogramaDTO } from '../../
 import { Simulaciones } from '../../../models/simulaciones';
 
 import { debounceTime, filter } from 'rxjs/operators';
+import { BonosReglas } from '../../../models/bonos-reglas';
+import { BonosReglasService } from '../../../services/bonos-reglas.service';
 
 type CostoFG = FormGroup<{
   nombreCosto: FormControl<string | null>;
@@ -35,7 +37,7 @@ type FSim = FormGroup<{
   tipoGracia: FormControl<'SIN_GRACIA' | 'TOTAL' | 'PARCIAL' | null>;
   cantidadGracia: FormControl<number | null>;
   aplicarBono: FormControl<boolean | null>;
-  bonoTipo: FormControl<string | null>;
+  bonoReglaId: FormControl<number | null>;
   tasaEfectivaAnual: FormControl<number | null>;
   costos: FormArray<CostoFG>;
   tasaDescuentoAnual: FormControl<number | null>;
@@ -57,8 +59,18 @@ export class CreareditarsimulacionesComponent implements OnInit {
   propiedades: Propiedades[] = [];
   propiedadesFiltradas: Propiedades[] = [];
 
-  frecuencias = [12, 6, 4, 2, 1] as const;
-  aniosBase: (360 | 365)[] = [360, 365];
+  frecuencias = [
+    { value: 12, label: 'Mensual (12)' },
+    { value: 6, label: 'Bimestral (6)' },
+    { value: 4, label: 'Trimestral (4)' },
+    { value: 2, label: 'Semestral (2)' },
+    { value: 1, label: 'Anual (1)' },
+  ] as const;
+
+  aniosBase = [
+    { value: 360 as 360, label: 'Año comercial (360)' },
+    { value: 365 as 365, label: 'Año calendario (365)' },
+  ];
   tiposGracia: TipoGracia[] = ['SIN_GRACIA', 'TOTAL', 'PARCIAL'];
 
   tiposCosto: CostoTipo[] = ['INICIAL', 'RECURRENTE'];
@@ -76,12 +88,17 @@ export class CreareditarsimulacionesComponent implements OnInit {
   propSel?: Propiedades;
 
   // límites dinámicos
-  lockPrice = true;                  // ← deja el precio en solo lectura
+  lockPrice = true;
   minCuotaSoles = 0;
   maxCuotaSoles = 0;                 // = precio
   teaRange = { min: 0, max: 0 };
   plazoRange = { min: 1, max: 40 };
   maxGracia = 0;
+
+  bonosTechoPropio: BonosReglas[] = [];
+  loadingBonos = false;
+
+  readonly MAX_MESES_GRACIA_GLOBAL = 5;
 
   constructor(
     private fb: FormBuilder,
@@ -89,6 +106,7 @@ export class CreareditarsimulacionesComponent implements OnInit {
     private clientesSrv: ClientesService,
     private propSrv: PropiedadesService,
     private entSrv: EntidadesFinancierasService,
+    private bonosSrv: BonosReglasService,   // 👈 NUEVO
     private router: Router
   ) {
     this.form = this.fb.group({
@@ -104,7 +122,7 @@ export class CreareditarsimulacionesComponent implements OnInit {
       tipoGracia: this.fb.control<'SIN_GRACIA' | 'TOTAL' | 'PARCIAL' | null>('SIN_GRACIA', { validators: [Validators.required], nonNullable: false }),
       cantidadGracia: this.fb.control<number | null>(null),
       aplicarBono: this.fb.control<boolean | null>(false),
-      bonoTipo: this.fb.control<string | null>(null),
+      bonoReglaId: this.fb.control<number | null>(null),
       tasaEfectivaAnual: this.fb.control<number | null>(null, { updateOn: 'blur' }),
       costos: this.fb.array<CostoFG>([]),
       tasaDescuentoAnual: this.fb.control<number | null>(25, {
@@ -131,6 +149,91 @@ export class CreareditarsimulacionesComponent implements OnInit {
     this.form.get('tipoGracia')!.valueChanges.subscribe(v => this.toggleGracia(v));
 
     this.wireRestrictions();
+
+    this.form.get('aplicarBono')!.valueChanges.subscribe(aplica => {
+      if (aplica) {
+        this.cargarBonosTechoPropio();
+      } else {
+        this.bonosTechoPropio = [];
+        this.form.get('bonoReglaId')!.setValue(null, { emitEvent: false });
+      }
+    });
+
+    // Cuando cambie la propiedad o la moneda, si aplicarBono está activo, recargar
+    this.form.get('propiedadId')!.valueChanges.subscribe(() => {
+      if (this.form.get('aplicarBono')!.value) {
+        this.cargarBonosTechoPropio();
+      }
+    });
+
+    this.form.get('moneda')!.valueChanges.subscribe(() => {
+      if (this.form.get('aplicarBono')!.value) {
+        this.cargarBonosTechoPropio();
+      }
+    });
+
+    // ⬇⬇ NUEVO: deshabilitar al inicio
+    this.form.get('propiedadId')!.disable({ emitEvent: false });
+    this.form.get('entidadFinancieraId')!.disable({ emitEvent: false });
+
+    // Cuando se elige cliente → habilitar propiedad
+    this.form.get('clienteId')!.valueChanges.subscribe(cliId => {
+      this.refiltrarPropiedades();
+      this.form.get('propiedadId')!.reset(null, { emitEvent: false });
+      this.form.get('entidadFinancieraId')!.reset(null, { emitEvent: false });
+      this.entidadSel = undefined;
+      this.propSel = undefined;
+
+      if (cliId) {
+        this.form.get('propiedadId')!.enable({ emitEvent: false });
+      } else {
+        this.form.get('propiedadId')!.disable({ emitEvent: false });
+        this.form.get('entidadFinancieraId')!.disable({ emitEvent: false });
+      }
+    });
+
+    // Cuando se elige propiedad → habilitar entidad financiera
+    this.form.get('propiedadId')!.valueChanges.subscribe(propId => {
+      this.propSel = this.propiedades.find(p => p.inmueble_id === propId);
+      const precio = this.propSel?.precioInmueble ?? 0;
+      this.form.get('precioVenta')!.setValue(precio, { emitEvent: false });
+
+      if (propId) {
+        this.form.get('entidadFinancieraId')!.enable({ emitEvent: false });
+      } else {
+        this.form.get('entidadFinancieraId')!.disable({ emitEvent: false });
+        this.entidadSel = undefined;
+      }
+    });
+  }
+
+  private cargarBonosTechoPropio(): void {
+    const propiedadId = this.form.get('propiedadId')!.value;
+    const moneda = this.form.get('moneda')!.value ?? 'PEN';
+
+    if (!propiedadId) {
+      this.bonosTechoPropio = [];
+      this.form.get('bonoReglaId')!.setValue(null, { emitEvent: false });
+      return;
+    }
+
+    this.loadingBonos = true;
+    this.bonosSrv.getTechoPropio(propiedadId, moneda).subscribe({
+      next: (lista) => {
+        this.bonosTechoPropio = lista;
+        // si solo hay uno, lo seleccionamos por defecto
+        if (lista.length === 1) {
+          this.form.get('bonoReglaId')!.setValue(lista[0].bonoRegla_id, { emitEvent: false } as any);
+        }
+        this.loadingBonos = false;
+      },
+      error: (err) => {
+        console.error('Error cargando bonos Techo Propio', err);
+        this.bonosTechoPropio = [];
+        this.form.get('bonoReglaId')!.setValue(null, { emitEvent: false });
+        this.loadingBonos = false;
+      }
+    });
   }
 
   // util: clamp
@@ -180,14 +283,22 @@ export class CreareditarsimulacionesComponent implements OnInit {
         // Plazo
         this.plazoRange.min = this.entidadSel?.plazoMin ?? 1;
         this.plazoRange.max = this.entidadSel?.plazoMax ?? 40;
+
         const plazoCtrl = this.form.get('tiempoAnios')!;
-        plazoCtrl.setValidators([Validators.required, Validators.min(this.plazoRange.min), Validators.max(this.plazoRange.max)]);
-        // Clampea si está fuera
-        plazoCtrl.setValue(this.clamp(plazoCtrl.value, this.plazoRange.min, this.plazoRange.max), { emitEvent: false });
+        plazoCtrl.setValidators([
+          Validators.required,
+          Validators.min(this.plazoRange.min),
+          Validators.max(this.plazoRange.max)
+        ]);
+
+        // ⬇⬇ Aquí forzamos el mínimo de la entidad
+        const nuevoPlazo = this.plazoRange.min;
+        plazoCtrl.setValue(nuevoPlazo, { emitEvent: false });
         plazoCtrl.updateValueAndValidity({ emitEvent: false });
 
-        // Recalcular cuota mínima
+        // Recalcular cuota mínima y gracia
         this.applyCuotaLimits();
+        this.applyGraceMax();
       });
 
     // PRECIO/PLAZO/FRECUENCIA → recalcular dependencias
@@ -222,9 +333,12 @@ export class CreareditarsimulacionesComponent implements OnInit {
       cg.disable({ emitEvent: false });
     } else {
       cg.enable({ emitEvent: false });
-      cg.setValidators([Validators.min(0), Validators.max(this.maxGracia)]);
+      cg.setValidators([
+        Validators.min(0),
+        Validators.max(this.maxGracia)
+      ]);
       cg.updateValueAndValidity({ emitEvent: false });
-      // clamp si estaba fuera
+
       if (cg.value != null) {
         const cl = this.clamp(cg.value, 0, this.maxGracia);
         if (cl !== cg.value) cg.setValue(cl, { emitEvent: false });
@@ -248,15 +362,22 @@ export class CreareditarsimulacionesComponent implements OnInit {
   private applyGraceMax(): void {
     const anios = Number(this.form.get('tiempoAnios')!.value ?? 0);
     const freq = Number(this.form.get('frecuenciaPago')!.value ?? 12);
-    this.maxGracia = Math.max(0, anios * freq);
+
+    // n total de periodos, pero limitado a 5
+    const nTotal = Math.max(0, anios * freq);
+    this.maxGracia = Math.min(nTotal, this.MAX_MESES_GRACIA_GLOBAL);
 
     const cg = this.form.get('cantidadGracia')!;
     if (cg.enabled) {
-      cg.setValidators([Validators.min(0), Validators.max(this.maxGracia)]);
+      cg.setValidators([
+        Validators.min(0),
+        Validators.max(this.maxGracia)
+      ]);
       cg.setValue(this.clamp(cg.value, 0, this.maxGracia), { emitEvent: false });
       cg.updateValueAndValidity({ emitEvent: false });
     }
   }
+
 
   // === costos ===
   get costosFA(): FormArray<CostoFG> {
@@ -355,13 +476,17 @@ export class CreareditarsimulacionesComponent implements OnInit {
   // ===== request/submit =====
   private buildPayload(): SimulacionRequest {
     const v = this.form.value;
-    const cantGracia = v.tipoGracia === 'SIN_GRACIA' ? null : (v.cantidadGracia ?? null);
+    const cantGracia =
+      v.tipoGracia === 'SIN_GRACIA' ? null : (v.cantidadGracia ?? null);
+
     const costos = (v.costos ?? [])
       .map(c => ({
         nombreCosto: String(c?.nombreCosto ?? '').trim(),
         valor: Number(c?.valor ?? 0),
         tipo: (c?.tipo ?? 'INICIAL') as CostoTipo,
-        periodicidad: (c?.tipo === 'RECURRENTE' ? (c?.periodicidad ?? 'POR_CUOTA') : undefined) as any
+        periodicidad: (c?.tipo === 'RECURRENTE'
+          ? (c?.periodicidad ?? 'POR_CUOTA')
+          : undefined) as any
       }))
       .filter(c => c.nombreCosto.length > 0 && !Number.isNaN(c.valor));
 
@@ -377,7 +502,7 @@ export class CreareditarsimulacionesComponent implements OnInit {
       tipoGracia: (v.tipoGracia ?? 'SIN_GRACIA'),
       cantidadGracia: cantGracia,
       aplicarBono: Boolean(v.aplicarBono),
-      bonoTipo: (v.bonoTipo && v.bonoTipo.trim().length ? v.bonoTipo.trim() : null),
+      bonoReglaId: v.bonoReglaId ?? null,  // <- aquí mandas el TP elegido
       tasaEfectivaAnual: (v.tasaEfectivaAnual ?? null),
       costos: costos.length ? costos : undefined,
       tasaDescuentoAnual: (v.tasaDescuentoAnual ?? null)
