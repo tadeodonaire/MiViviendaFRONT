@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environments';
 import { BonosReglas } from '../models/bonos-reglas';
-import { map, Subject } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { map, Observable, Subject } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 const base_url = environment.base;
 
@@ -33,5 +33,15 @@ const base_url = environment.base;
   }
   deleteR(id: number) {
     return this.http.delete(`${this.url}/${id}`);
+  }
+  getTechoPropio(
+    propiedadId: number,
+    moneda: string
+  ): Observable<BonosReglas[]> {
+    const params = new HttpParams()
+      .set('propiedadId', propiedadId.toString()) // por si acaso
+      .set('moneda', moneda);
+
+    return this.http.get<BonosReglas[]>(`${this.url}/techo-propio`, { params });
   }
 }

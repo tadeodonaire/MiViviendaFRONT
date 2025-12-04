@@ -49,10 +49,15 @@
 
             <!-- Línea 2 -->
             <div class="form-group">
-              <label>Moneda</label>
+              <label>Moneda de visualización</label>
               <select formControlName="moneda">
-                <option value="PEN">PEN</option>
+                <option value="PEN">S/ (PEN)</option>
+                <option value="USD">$ (USD)</option>
               </select>
+              <small class="hint">
+                Todos los montos que ingreses siguen siendo en <b>soles</b>;
+                solo cambia la moneda en la que se mostrará el cronograma.
+              </small>
             </div>
 
             <div class="form-group">
@@ -85,8 +90,8 @@
             <div class="form-group">
               <label>Frecuencia de pago</label>
               <select formControlName="frecuenciaPago">
-                <option *ngFor="let f of frecuencias" [ngValue]="f">
-                  {{ f }} <!-- 12, 6, 4, 2, 1 -->
+                <option *ngFor="let f of frecuencias" [ngValue]="f.value">
+                  {{ f.label }}
                 </option>
               </select>
             </div>
@@ -94,7 +99,9 @@
             <div class="form-group">
               <label>Tipo de año</label>
               <select formControlName="tipoAnio">
-                <option *ngFor="let a of aniosBase" [ngValue]="a">{{ a }}</option>
+                <option *ngFor="let a of aniosBase" [ngValue]="a.value">
+                  {{ a.label }}
+                </option>
               </select>
             </div>
 
@@ -112,7 +119,7 @@
               <input type="number" formControlName="cantidadGracia" [attr.min]="0" [attr.max]="maxGracia" />
               <small class="hint">
                 Máx. permitido: <b>{{ maxGracia }}</b> periodos
-                ({{ form.value.tiempoAnios }} × {{ form.value.frecuenciaPago }})
+                (topado en 5 por política del banco)
               </small>
             </div>
 
@@ -141,11 +148,24 @@
                 <input type="checkbox" formControlName="aplicarBono" />
                 <span>¿Aplicar bono?</span>
               </label>
+            </div>
 
-              <div class="inline">
-                <label>Bono tipo</label>
-                <input type="text" formControlName="bonoTipo" placeholder="BBP / BBI (opcional)" />
-              </div>
+            <div class="tp" *ngIf="form.value.aplicarBono">
+              <label>Bonos Techo Propio elegibles</label>
+              <select formControlName="bonoReglaId">
+                <option [ngValue]="null">— Seleccione un bono —</option>
+                <option *ngFor="let b of bonosTechoPropio" [ngValue]="b.bonoRegla_id">
+                  {{ b.nombre }}
+                  – S/ {{ b.monto | number:'1.2-2' }}
+                  (Precio: {{ b.precioMin | number:'1.0-0' }} – {{ b.precioMax | number:'1.0-0' }},
+                  Ingreso ≤ {{ b.ingresoMax | number:'1.0-0' }})
+                </option>
+              </select>
+
+              <small class="hint" *ngIf="!bonosTechoPropio.length">
+                No se encontraron bonos Techo Propio elegibles para esta propiedad y rango de ingresos.
+                Si corresponde, el backend puede aplicar un bono BBI/BBP automáticamente.
+              </small>
             </div>
           </div>
 
