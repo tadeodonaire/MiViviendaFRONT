@@ -36,4 +36,5 @@ export interface SimulacionRequest {
 
   // Debe calzar con Costes_adicionalesDTO del back
   costos?: CostoAdicionalReq[];
+  tasaDescuentoAnual?: number | null;
 }
