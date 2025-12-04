@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Usuarios } from '../../../models/usuarios';
 import { Roles } from '../../../models/roles';
 import { UsuariosService } from '../../../services/usuarios.service';
@@ -8,20 +13,30 @@ import { RolesService } from '../../../services/roles.service';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
+import { LoginService } from '../../../services/login.service';
 
 @Component({
   selector: 'app-crearusuarios',
-  imports: [CommonModule,MatFormFieldModule,ReactiveFormsModule,MatButtonModule,RouterModule],
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    RouterModule,
+  ],
   templateUrl: './crearusuarios.component.html',
-  styleUrl: './crearusuarios.component.css'
+  styleUrl: './crearusuarios.component.css',
 })
-export class CrearusuariosComponent implements OnInit{
+export class CrearusuariosComponent implements OnInit {
   form: FormGroup = new FormGroup({});
   usuarios: Usuarios = new Usuarios();
   listaRoles: Roles[] = [];
+  esAdmin: boolean = false;
+  estaLogueado: boolean = false;
 
   constructor(
     private formBuilder: FormBuilder,
+    private loginService: LoginService,
     private uS: UsuariosService,
     private router: Router,
     private rS: RolesService
@@ -37,6 +52,15 @@ export class CrearusuariosComponent implements OnInit{
     });
     this.rS.list().subscribe((data) => {
       this.listaRoles = data;
+    });
+
+    const rol = this.loginService.showRole();
+    this.esAdmin = rol === 'ADMINISTRADOR';
+    this.estaLogueado = this.loginService.verificar();
+    // ✅ Cargar roles sin necesidad de login (usa /roles/public si no hay token)
+    this.rS.getList().subscribe({
+      next: (data) => (this.listaRoles = data),
+      error: (e) => console.error('No se pudieron cargar roles:', e),
     });
   }
   aceptar() {
