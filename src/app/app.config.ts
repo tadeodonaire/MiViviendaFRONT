@@ -1,9 +1,20 @@
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  importProvidersFrom,
+  provideZoneChangeDetection,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideServerRendering } from '@angular/platform-server';
 import { routes } from './app.routes';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideClientHydration,
+  withEventReplay,
+} from '@angular/platform-browser';
+import {
+  provideHttpClient,
+  withFetch,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { JwtModule } from '@auth0/angular-jwt';
 
 export function tokenGetter() {
@@ -27,10 +38,13 @@ export const appConfig: ApplicationConfig = {
       JwtModule.forRoot({
         config: {
           tokenGetter: tokenGetter,
-          allowedDomains: ['localhost:8089'],
-          disallowedRoutes: ['http://localhost:8089/login'],
+          allowedDomains: ['mivivienda-e4hndkeghng2a8ez.eastus-01.azurewebsites.net'],
+          disallowedRoutes: ['https://mivivienda-e4hndkeghng2a8ez.eastus-01.azurewebsites.net/login'],
+          //allowedDomains: ['localhost:8089'],
+          //disallowedRoutes: ['http://localhost:8089/login'],
         },
       })
-    ), provideClientHydration(withEventReplay()),
+    ),
+    provideClientHydration(withEventReplay()),
   ],
 };
