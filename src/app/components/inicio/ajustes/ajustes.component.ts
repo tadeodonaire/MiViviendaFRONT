@@ -37,4 +37,10 @@ export class AjustesComponent {
   verBonosReglas() {
     this.router.navigate(['bonosreglas']);
   }
+
+  cerrarSesion() {
+    localStorage.clear();
+    sessionStorage.clear();
+    this.router.navigate(['login']);
+  }
 }
