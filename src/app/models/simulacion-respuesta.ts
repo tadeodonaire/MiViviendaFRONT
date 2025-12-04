@@ -45,6 +45,7 @@ export interface SimulacionCronogramaDTO {
 export interface SimulacionConCronogramaResponse {
     simulacion: Simulaciones;
     cronograma: SimulacionCronogramaDTO[];
-    van: number;       // VAN en moneda de la simulación
-    tirAnual: number;  // TIR anual en %
+    van: number;
+    tirPeriodo: number; // % por periodo (mensual, trimestral, etc.)
+    tcea: number;       // % anual
 }

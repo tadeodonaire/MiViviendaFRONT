@@ -24,27 +24,36 @@
                 <div class="label">Monto a financiar</div>
                 <div class="value">S/ {{ d.simulacion.montoPrestamo | number:'1.2-2' }}</div>
             </div>
+
             <div class="card">
                 <div class="label">Cuota (francesa, sin seguros)</div>
                 <div class="value">S/ {{ d.simulacion.cuotaFija | number:'1.2-2' }}</div>
             </div>
+
             <div class="card">
                 <div class="label">TEA</div>
                 <div class="value">{{ (d.simulacion.valorTasa * 100) | number:'1.2-2' }}%</div>
             </div>
 
-            <!-- 🔹 VAN -->
+            <!-- VAN -->
             <div class="card">
                 <div class="label">VAN de la operación</div>
                 <div class="value">S/ {{ d.van | number:'1.2-2' }}</div>
             </div>
 
-            <!-- 🔹 TIR anual -->
+            <!-- TIR del periodo -->
             <div class="card">
-                <div class="label">TIR anual</div>
-                <div class="value">{{ d.tirAnual | number:'1.2-2' }}%</div>
+                <div class="label">TIR del periodo</div>
+                <div class="value">{{ d.tirPeriodo | number:'1.2-2' }}%</div>
+            </div>
+
+            <!-- TCEA -->
+            <div class="card">
+                <div class="label">TCEA (anual)</div>
+                <div class="value">{{ d.tcea | number:'1.2-2' }}%</div>
             </div>
         </section>
+
 
         <section class="grid">
             <div><b>Propiedad:</b> {{ d.simulacion.propiedades_inmueble_id.nombreInmueble }}</div>

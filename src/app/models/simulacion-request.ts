@@ -14,7 +14,7 @@ export interface CostoAdicionalReq {
 export interface SimulacionRequest {
   propiedadId: number;
   entidadFinancieraId: number;
-  moneda: Moneda;
+  moneda: 'PEN' | 'USD';   
   precioVenta: number;
   cuotaInicial: number;
   tiempoAnios: number;

@@ -49,10 +49,15 @@
 
             <!-- Línea 2 -->
             <div class="form-group">
-              <label>Moneda</label>
+              <label>Moneda de visualización</label>
               <select formControlName="moneda">
-                <option value="PEN">PEN</option>
+                <option value="PEN">S/ (PEN)</option>
+                <option value="USD">$ (USD)</option>
               </select>
+              <small class="hint">
+                Todos los montos que ingreses siguen siendo en <b>soles</b>;
+                solo cambia la moneda en la que se mostrará el cronograma.
+              </small>
             </div>
 
             <div class="form-group">
