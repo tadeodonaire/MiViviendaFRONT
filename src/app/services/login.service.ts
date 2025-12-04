@@ -15,7 +15,8 @@ export class LoginService {
 
   // 🔑 Iniciar sesión
   login(request: JwtRequest) {
-    return this.http.post(`http://localhost:8089/login`, request);
+    //return this.http.post(`http://localhost:8089/login`, request);
+    return this.http.post(`https://mivivienda-e4hndkeghng2a8ez.eastus-01.azurewebsites.net/login`, request);
   }
   
   // 🔍 Verificar si el usuario está autenticado
