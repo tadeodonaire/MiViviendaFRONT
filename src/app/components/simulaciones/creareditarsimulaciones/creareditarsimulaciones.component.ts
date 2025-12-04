@@ -38,7 +38,9 @@ type FSim = FormGroup<{
   bonoTipo: FormControl<string | null>;
   tasaEfectivaAnual: FormControl<number | null>;
   costos: FormArray<CostoFG>;
+  tasaDescuentoAnual: FormControl<number | null>;
 }>;
+
 
 @Component({
   selector: 'app-creareditarsimulaciones',
@@ -94,7 +96,7 @@ export class CreareditarsimulacionesComponent implements OnInit {
       propiedadId: this.fb.control<number | null>(null, { validators: [Validators.required], nonNullable: false }),
       entidadFinancieraId: this.fb.control<number | null>(null, { validators: [Validators.required], nonNullable: false }),
       moneda: this.fb.control<'PEN' | 'USD' | null>('PEN', { validators: [Validators.required], nonNullable: false }),
-      precioVenta: this.fb.control<number | null>(null),  // se setea desde la propiedad
+      precioVenta: this.fb.control<number | null>(null),
       cuotaInicial: this.fb.control<number | null>(0, { validators: [Validators.required], updateOn: 'blur' }),
       tiempoAnios: this.fb.control<number | null>(15, { validators: [Validators.required], updateOn: 'blur' }),
       frecuenciaPago: this.fb.control<number | null>(12, { validators: [Validators.required], nonNullable: false }),
@@ -104,8 +106,12 @@ export class CreareditarsimulacionesComponent implements OnInit {
       aplicarBono: this.fb.control<boolean | null>(false),
       bonoTipo: this.fb.control<string | null>(null),
       tasaEfectivaAnual: this.fb.control<number | null>(null, { updateOn: 'blur' }),
-      costos: this.fb.array<CostoFG>([])
+      costos: this.fb.array<CostoFG>([]),
+      tasaDescuentoAnual: this.fb.control<number | null>(25, {
+        updateOn: 'blur'
+      })
     });
+
   }
 
   ngOnInit(): void {
@@ -351,13 +357,13 @@ export class CreareditarsimulacionesComponent implements OnInit {
     const v = this.form.value;
     const cantGracia = v.tipoGracia === 'SIN_GRACIA' ? null : (v.cantidadGracia ?? null);
     const costos = (v.costos ?? [])
-    .map(c => ({
-      nombreCosto: String(c?.nombreCosto ?? '').trim(),
-      valor: Number(c?.valor ?? 0),
-      tipo: (c?.tipo ?? 'INICIAL') as CostoTipo,
-      periodicidad: (c?.tipo === 'RECURRENTE' ? (c?.periodicidad ?? 'POR_CUOTA') : undefined) as any
-    }))
-    .filter(c => c.nombreCosto.length > 0 && !Number.isNaN(c.valor));
+      .map(c => ({
+        nombreCosto: String(c?.nombreCosto ?? '').trim(),
+        valor: Number(c?.valor ?? 0),
+        tipo: (c?.tipo ?? 'INICIAL') as CostoTipo,
+        periodicidad: (c?.tipo === 'RECURRENTE' ? (c?.periodicidad ?? 'POR_CUOTA') : undefined) as any
+      }))
+      .filter(c => c.nombreCosto.length > 0 && !Number.isNaN(c.valor));
 
     return {
       propiedadId: Number(v.propiedadId),
@@ -373,9 +379,11 @@ export class CreareditarsimulacionesComponent implements OnInit {
       aplicarBono: Boolean(v.aplicarBono),
       bonoTipo: (v.bonoTipo && v.bonoTipo.trim().length ? v.bonoTipo.trim() : null),
       tasaEfectivaAnual: (v.tasaEfectivaAnual ?? null),
-      costos: costos.length ? costos : undefined
+      costos: costos.length ? costos : undefined,
+      tasaDescuentoAnual: (v.tasaDescuentoAnual ?? null)
     };
   }
+
 
   onSubmit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }

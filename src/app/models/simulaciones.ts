@@ -31,4 +31,7 @@ export class Simulaciones {
     bono_Reglas_reglas_id: BonosReglas = new BonosReglas();
 
     costos: CostesAdicionales[] = [];
+
+    tasaDescuentoAnual?: number = 0;
+
 }
